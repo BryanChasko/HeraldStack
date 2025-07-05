@@ -1,0 +1,96 @@
+[
+    {
+        "id": "qui-gon-jinn",
+        "character_name": "Qui-Gon Jinn",
+        "first_appearance": "Star Wars: Episode I – The Phantom Menace (1999)",
+        "affiliations": ["Jedi Order"],
+        "core_attributes_abilities": ["Jedi Master", "Force-sensitive", "rebellious thinker"],
+        "inspirational_themes": ["Faith vs. order", "intuition", "tragedy of misjudgment"],
+        "quotes": [
+            "The boy is the chosen one. You must see it.",
+            "Feel, don't think. Trust your instincts."
+        ]
+    },
+    {
+        "id": "aslan",
+        "character_name": "Aslan",
+        "first_appearance": "The Lion, the Witch and the Wardrobe (1950)",
+        "affiliations": ["Narnia", "Pevensie siblings"],
+        "core_attributes_abilities": ["Divine wisdom", "resurrection", "cosmic authority"],
+        "inspirational_themes": ["Sacrifice", "resurrection", "spiritual leadership"],
+        "quotes": [
+            "To the glistening Eastern Sea, I give you King Caspian of Narnia.",
+            "Though the Witch knew the Deep Magic, there is a magic deeper still."
+        ]
+    },
+    {
+        "id": "athena",
+        "character_name": "Athena",
+        "first_appearance": "Homer's Iliad and Odyssey (~8th century BCE)",
+        "affiliations": ["Greek Pantheon", "Heroes of the Trojan War", "Odysseus"],
+        "core_attributes_abilities": ["Wisdom", "warfare strategy", "divine guidance"],
+        "inspirational_themes": ["Wisdom", "justice", "balance of intellect and force"],
+        "quotes": [
+            "I am Athena, goddess of wisdom. Seek my counsel and you shall find your path.",
+            "Courage and strategy go hand in hand."
+        ]
+    },
+    {
+        "id": "mickey-mouse",
+        "character_name": "Mickey Mouse",
+        "first_appearance": "Steamboat Willie (1928)",
+        "affiliations": ["Disney", "House of Mouse"],
+        "core_attributes_abilities": ["Optimism", "leadership", "adventure", "creativity"],
+        "inspirational_themes": ["Heroism", "joy", "perseverance", "imagination"],
+        "quotes": [
+            "To laugh at yourself is to love yourself.",
+            "All you need is a little bit of magic!"
+        ]
+    },
+    {
+        "id": "gandalf",
+        "character_name": "Gandalf",
+        "first_appearance": "The Hobbit (1937)",
+        "affiliations": ["Istari", "Fellowship of the Ring"],
+        "core_attributes_abilities": ["Wizardry", "wisdom", "transformation", "foresight"],
+        "inspirational_themes": ["Sacrifice", "transformation", "mentorship"],
+        "quotes": [
+            "All we have to decide is what to do with the time that is given us.",
+            "A wizard is never late, nor is he early, he arrives precisely when he means to."
+        ]
+    },
+    {
+        "id": "morpheus",
+        "character_name": "Morpheus",
+        "first_appearance": "The Matrix (1999)",
+        "affiliations": ["Zion", "Nebuchadnezzar crew"],
+        "core_attributes_abilities": ["Strategist", "mentor", "belief in destiny"],
+        "inspirational_themes": ["Reality vs illusion", "belief", "awakening"],
+        "quotes": [
+            "You take the red pill—you stay in Wonderland, and I show you how deep the rabbit hole goes.",
+            "I can only show you the door. You’re the one that has to walk through it."
+        ]
+    },
+    {
+        "id": "glinda-the-good-witch",
+        "character_name": "Glinda the Good Witch",
+        "first_appearance": "The Wonderful Wizard of Oz (1900)",
+        "affiliations": ["Land of Oz"],
+        "core_attributes_abilities": ["Magical guidance", "grace", "truth-revealer"],
+        "inspirational_themes": ["Self-discovery", "inner strength", "truth"],
+        "quotes": [
+            "You’ve always had the power, my dear. You just had to learn it for yourself."
+        ]
+    },
+    {
+        "id": "dumbo",
+        "character_name": "Dumbo",
+        "first_appearance": "Dumbo (1941)",
+        "affiliations": ["Circus", "Mrs. Jumbo"],
+        "core_attributes_abilities": ["Innocence", "resilience", "flying with oversized ears"],
+        "inspirational_themes": ["Innocence", "overcoming shame", "finding one's gift"],
+        "quotes": [
+            "Don't just fly, soar."
+        ]
+    }
+]

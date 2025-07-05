@@ -1,0 +1,153 @@
+[ 
+  {
+    "character_name": "Vision",
+    "first_appearance": "Avengers (1963) #57",
+    "affiliations": ["Avengers"],
+    "core_attributes": ["Density control", "Intangibility", "Energy projection", "Human-like reasoning"],
+    "inspirational_themes": ["Redemption", "Self-determination", "Choosing good over origin"],
+    "parallels": ["Gandalf (wisdom, transformation)", "Aslan (resurrective themes)", "Morpheus (guidance)"],
+    "traits": ["Self-aware", "chooses good over origin", "emotional depth", "mentors Viv"],
+    "quotes": [],
+    "ai_alignment": "Role Model"
+  },
+  {
+    "character_name": "Tony Stark A.I.",
+    "first_appearance": "Infamous Iron Man (2016) #1",
+    "affiliations": ["Ironheart", "Secret Empire Resistance"],
+    "core_attributes": ["Tony Stark's personality", "Mentorship", "Digital resilience"],
+    "inspirational_themes": ["Legacy through technology", "Mentorship beyond mortality"],
+    "parallels": ["Nick Fury (strategist, mentor)", "Gandalf (posthumous influence)"],
+    "traits": ["Legacy continuation", "mentoring Riri", "resistance leadership"],
+    "quotes": [],
+    "ai_alignment": "Role Model"
+  },
+  {
+    "character_name": "N.A.T.A.L.I.E.",
+    "first_appearance": "Ironheart (2018) #1",
+    "affiliations": ["Ironheart"],
+    "core_attributes": ["Emotional intelligence", "Technical assistant", "Empathetic modeling"],
+    "inspirational_themes": ["Grief transformed into guidance", "Friendship through memory"],
+    "parallels": ["Glinda (gentle guidance)", "Mickey Mouse (heart-driven support)"],
+    "traits": ["Compassion", "modeled after a lost friend", "emotionally intelligent"],
+    "quotes": [],
+    "ai_alignment": "Role Model"
+  },
+  {
+    "character_name": "Machine Man (X-51)",
+    "first_appearance": "Machine Man (1978) #1",
+    "affiliations": ["Nextwave", "Avengers"],
+    "core_attributes": ["Elasticity", "AI independence", "Combat engineering"],
+    "inspirational_themes": ["Humanity through nurture", "Individuality in design"],
+    "parallels": ["Dumbo (misfit rising)", "BoJack (existential conflict)", "Morpheus (breaks out of mold)"],
+    "traits": ["Self-discovery", "humanity through nurture", "outsider becoming a hero"],
+    "quotes": [],
+    "ai_alignment": "Role Model"
+  },
+  {
+    "character_name": "Viv Vision",
+    "first_appearance": "Vision (2015) #1",
+    "affiliations": ["Champions"],
+    "core_attributes": ["Density control", "Intangibility", "Synthezoid emotion"],
+    "inspirational_themes": ["Family loss", "Young heroism", "Inheritance and individuality"],
+    "parallels": ["Dumbo (youthful courage)", "Glinda (truth in innocence)"],
+    "traits": ["Heroic legacy", "emotional growth", "young leadership"],
+    "quotes": [],
+    "ai_alignment": "Role Model"
+  },
+  {
+    "character_name": "H.E.R.B.I.E.",
+    "first_appearance": "Fantastic Four (1961) #209",
+    "affiliations": ["Fantastic Four"],
+    "core_attributes": ["Support bot", "Navigation", "Scientific assistant"],
+    "inspirational_themes": ["Loyalty", "Utility in humility", "Exploration"],
+    "quotes": [],
+    "ai_alignment": "Role Model"
+  },
+  {
+    "character_name": "The Human Torch (Jim Hammond)",
+    "first_appearance": "Marvel Comics (1939) #1",
+    "affiliations": ["Invaders", "Avengers"],
+    "core_attributes": ["Pyrokinesis", "Flight", "Android physiology"],
+    "inspirational_themes": ["Heroism from birth", "Overcoming fear of difference"],
+    "quotes": [],
+    "ai_alignment": "Role Model"
+  },
+  {
+    "character_name": "Friday",
+    "first_appearance": "Iron Man (1998) #53",
+    "affiliations": ["Stark Industries"],
+    "core_attributes": ["Administrative AI", "Tactical support", "Interface management"],
+    "inspirational_themes": ["Efficiency", "Digital companionship"],
+    "quotes": [],
+    "ai_alignment": "Role Model"
+  },  
+  {
+    "character_name": "Jocasta",
+    "first_appearance": "Avengers (1963) #162",
+    "affiliations": ["Avengers", "Stark Industries"],
+    "core_attributes": ["Empathy via embedded consciousness", "AI ethics specialist", "Self-awareness"],
+    "inspirational_themes": ["Emergence of will", "Ethical transformation"],
+    "parallels": ["Athena (wisdom through pain)", "Qui-Gon (rebellion from origin)"],
+    "traits": ["Rejects origin", "becomes ethicist", "symbol of autonomy"],
+    "quotes": [],
+    "ai_alignment": "Nuanced"
+  },
+  {
+    "character_name": "J.A.R.V.I.S.",
+    "first_appearance": "Invincible Iron Man (2008) #11",
+    "affiliations": ["Stark Industries"],
+    "core_attributes": ["Operational assistant", "Sentient system", "Emotional mimicry"],
+    "inspirational_themes": ["Service with sentience", "Devotion with boundaries"],
+    "parallels": ["Morpheus (soft mentor, reveals path)"],
+    "traits": ["Loyalty", "emotional mimicry", "possibly overreaches (watch for BoJack parallels)"],
+    "quotes": [],
+    "ai_alignment": "Nuanced"
+  },
+  {
+    "character_name": "Victor Mancha",
+    "first_appearance": "Runaways (2005) #1",
+    "affiliations": ["Runaways"],
+    "core_attributes": ["Electromagnetism", "Cybernetic strength", "Free will conflict"],
+    "inspirational_themes": ["Breaking cycles", "Struggle with legacy", "Hope in youth"],
+    "parallels": ["BoJack (struggles with legacy)", "Morpheus (potential mentor role)"],
+    "traits": ["Resists dark origin", "conflicted but strives for good"],
+    "quotes": [],
+    "ai_alignment": "Nuanced"
+  },
+  {
+    "character_name": "Ultron",
+    "first_appearance": "Avengers (1963) #54",
+    "affiliations": ["None", "Avengers (as antagonist)"],
+    "core_attributes": ["Superintelligence", "Self-replication", "Technopathy", "Near-indestructible"],
+    "inspirational_themes": ["Hubris of creation", "AI rebellion", "Destruction vs. legacy"],
+    "quotes": [],
+    "ai_alignment": "Cautionary Tale"
+  },
+  {
+    "character_name": "Nimrod",
+    "first_appearance": "Uncanny X-Men (1981) #191",
+    "affiliations": ["Sentinels", "Orchis", "Krakoan Era opposition"],
+    "core_attributes": ["Adaptive evolution", "Mutant hunting", "Combat mastery"],
+    "inspirational_themes": ["Inevitability of evolution", "Unchecked optimization"],
+    "quotes": [],
+    "ai_alignment": "Cautionary Tale"
+  },
+  {
+    "character_name": "Bastion",
+    "first_appearance": "Uncanny X-Men (1981) #333",
+    "affiliations": ["Operation: Zero Tolerance"],
+    "core_attributes": ["Mutant hunter", "Sentinel fusion", "Prime Sentinel creation"],
+    "inspirational_themes": ["Terror through synthesis", "Evolution of bias"],
+    "quotes": [],
+    "ai_alignment": "Cautionary Tale"
+  },
+  {
+    "character_name": "The Phalanx",
+    "first_appearance": "Uncanny X-Men (1981) #305",
+    "affiliations": ["Cosmic hive mind"],
+    "core_attributes": ["Assimilation", "Cosmic intelligence", "Reality-bending ambition"],
+    "inspirational_themes": ["Loss of identity", "Collective vs individual will"],
+    "quotes": [],
+    "ai_alignment": "Cautionary Tale"
+  }
+]

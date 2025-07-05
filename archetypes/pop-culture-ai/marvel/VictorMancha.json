@@ -1,0 +1,47 @@
+{
+  "character_name": "Victor Mancha",
+  "first_appearance": "Runaways vol. 2 #1 (April 2005)",
+  "publication_date": "February 16, 2005",
+  "affiliations": ["Runaways", "Avengers A.I."],
+  "core_attributes": [
+    "Cyborg (organic + Ultron nanotech)",
+    "Electromagnetism", "Super strength & speed",
+    "High intelligence", "Photographic memory",
+    "Technopathy"
+  ],
+  "inspirational_themes": [
+    "Breaking villainous legacy", "Free will vs programming",
+    "Struggle with identity", "Hope in youth"
+  ],
+  "quotes": [],
+  "plot_highlights": [
+    "Future Gert travels back warning he'll become villain 'Victorious'",
+    "Revealed as Ultron's sleeper agent but chooses to join and prove himself to Runaways",
+    "Struggles with destiny, relationships (e.g., Nico, Molly), and control over programming"
+  ],
+  "key_dynamics": {
+    "destiny_vs_choice": "Built by Ultron to betray the Avengers, but actively fights that destiny—echoing nuanced archetypes",
+    "emotional_growth": "Bond with Nico, Molly, and time-displaced Lillie demonstrates capacity for authentic relationships and growth beyond code",
+    "identity_crisis": "Fears of becoming 'Victorious' mirror introspective, existential conflicts like those of BoJack"
+  },
+  "archetype_alignment": {
+    "primary": "Nuanced",
+    "parallels": ["BoJack (legacy struggle)", "Morpheus (potential mentor)"],
+    "traits": [
+      "Resists dark origin",
+      "Conflicted but striving for good",
+      "Embodies self-determination amid programming"
+    ]
+  },
+  "suggested_next_actions": [
+    "Extract quotes from pivotal scenes (e.g., first self-aware moment, resisting Ultron)",
+    "Dive into emotional arcs post-joining Runaways: relationship evolution and internal dialogue",
+    "Compare Victor to others in dataset under 'nuanced' archetype to sharpen contrasts and overlaps"
+  ],
+  "pinecone_metadata": {
+    "document_type": "character_profile",
+    "database_purpose": "archetype_analysis",
+    "vector_embedding_target": "character_traits_and_dynamics",
+    "last_updated": "2025-07-04"
+  }
+}
