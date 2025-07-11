@@ -174,3 +174,87 @@ Generates a weekly digest summarizing what worked or didn't, progress on goals, 
 He routes context and emotion to other entities as needed.  
 HeraldStack is not automation for automation's sake.  
 It's an ambient layer of **emotional intelligence**, **pragmatic execution**, and **narrative continuity**, built to walk beside Bryan — one task, one moment, one story at a time.
+
+---
+
+## Directory Structure and Naming Best Practices
+
+/**
+ * This module follows our established naming and organization practices:
+ * 
+ * - **Descriptive Naming:** All variables, functions, and classes use clear, descriptive names that reflect their purpose and usage.
+ * - **Consistency:** Naming conventions such as camelCase for variables and functions, and PascalCase for classes are consistently applied.
+ * - **Modular Organization:** Code is organized into logical modules and functions to promote readability, maintainability, and reusability.
+ * - **Single Responsibility Principle:** Each function or class is designed to perform a single, well-defined task.
+ * - **Documentation:** Every exported function, class, and complex logic block is accompanied by concise documentation comments explaining its purpose, parameters, and return values.
+ * 
+ * - **Root Level Ethics** LawsOfRobotics.json alongside README.md for immediate visibility 
+ * Please refer to individual documentation comments for specific details about each component.
+ obtained on Bryan's macbook terminal using "tree" `brew install tree` `tree .`
+ */
+
+harald-stack/                    # Project root (kebab-case)
+.
+├── ai-entities
+│   ├── ellow.md
+│   ├── entity-registry.json
+│   ├── harald.md
+│   ├── kade-vox.md
+│   ├── liora.md
+│   ├── myrren.md
+│   ├── orin.md
+│   ├── solan.md
+│   └── stratia.md
+├── docs
+│   ├── architecture-decisions
+│   │   └── 001-entity-cohort-design.md
+│   ├── changelog.md
+│   ├── roadmap.md
+│   └── weekly-reviews
+├── infrastructure
+│   ├── aws-stack.md
+│   ├── cost-monitoring.md
+│   ├── deployment-guide.md
+│   └── pinecone-schemas.md
+├── integration-guides
+│   ├── agentic-orchestration.md
+│   ├── amazon-voice-interoperability.md
+│   ├── anthropic.md
+│   ├── aws.md
+│   ├── bedrock.md
+│   ├── cohere.md
+│   ├── google.md
+│   ├── griptape.md
+│   ├── haystack.md
+│   ├── hugging-face.md
+│   ├── microsoft.md
+│   ├── open-ai.md
+│   └── pinecone.md
+├── LawsOfRobotics.json
+├── memory-schemas
+│   ├── conversation-metadata.json
+│   ├── emotion-vectors.json
+│   ├── entity-context.json
+│   └── narrative-arc.json
+├── personality-archetypes
+│   ├── mythological
+│   │   ├── celtic
+│   │   ├── human-inspired.md
+│   │   └── norse
+│   │       ├── Heralds.json
+│   │       └── heralds.md
+│   └── pop-culture
+│       ├── bojack-horseman
+│       │   └── Bojack.json
+│       ├── literary
+│       ├── marvel
+│       │   ├── MarvelAIs.json
+│       │   ├── pop-culture-ai-references.md
+│       │   └── VictorMancha.json
+│       └── marvel.md
+├── README.md
+└── workflows
+    ├── consent-logging.md
+    ├── entity-routing.md
+    ├── task-orchestration.md
+    └── weekly-review.md
