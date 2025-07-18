@@ -105,7 +105,7 @@ References:
 - CMEK & VPC-SC enable model/data control and isolation  
     - [cloud.google.com](https://cloud.google.com)
 - Gemini filters to catch policy violations.
-- Vertex auditing/monitoring for pipeline, inference, and asset usage.
+- Vertex auditing/monitOring for pipeline, inference, and asset usage.
 
 ---
 
@@ -121,10 +121,10 @@ References:
 
 ---
 
-## 7. 📈 Monitoring & Operationalization
+## 7. 📈 MonitOring & Operationalization
 
 - Logging all inference calls, asset accesses, filters triggered.
-- Model drift alerts via Vertex model monitoring.
+- Model drift alerts via Vertex model monitOring.
 - Feedback loop: prompt tuning based on usage.
 - Security audits: review token storage, IAM usage, TEE logs periodically.
 

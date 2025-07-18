@@ -92,7 +92,7 @@ Use domain‑specific embeddings when possible
 
 Chunk large content via built-in chunkers (markdown, PDF, plain text)  
 
-🧪 Observability & Monitoring  
+🧪 Observability & MonitOring  
 Use official node template  
 
 

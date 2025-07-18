@@ -202,7 +202,7 @@ harald-stack/                    # Project root (kebab-case)
 │   ├── kade-vox.md
 │   ├── liora.md
 │   ├── myrren.md
-│   ├── orin.md
+│   ├── Orin.md
 │   ├── solan.md
 │   └── stratia.md
 ├── docs
@@ -213,7 +213,7 @@ harald-stack/                    # Project root (kebab-case)
 │   └── weekly-reviews
 ├── infrastructure
 │   ├── aws-stack.md
-│   ├── cost-monitoring.md
+│   ├── cost-monitOring.md
 │   ├── deployment-guide.md
 │   └── pinecone-schemas.md
 ├── integration-guides

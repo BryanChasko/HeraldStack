@@ -56,7 +56,7 @@ Rate Limiting	Use throttles per identity (e.g., Sign in with Google / Amazon) to
 Local Cache Layer	Integrate Redis/Memcached to reduce inference costs and latency for repeated queries.
 Offline Mode	Add fallback embedding and retrieval using sentence-transformers + FAISS locally when offline (e.g., on Pixel or MacBook).
 
-📊 Monitoring, Testing & Evaluation
+📊 MonitOring, Testing & Evaluation
 Tool	Role
 Haystack Eval Framework	Use F1, ExactMatch, and semantic metrics to test pipeline quality.
 Bedrock Trace Logs	Track prompt quality and token use when using Anthropic/OpenAI via Amazon Bedrock.

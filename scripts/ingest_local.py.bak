@@ -1,0 +1,37 @@
+#!/usr/bin/env python3
+"""
+Embed all *.md and *.json files under the HARALD folder
+and store a FAISS index plus a parallel metadata file.
+
+Run:  python scripts/ingest_local.py
+"""
+
+import os, pathlib, json, requests
+import numpy as np, faiss                # pip install faiss-cpu
+ROOT = pathlib.Path(__file__).resolve().parents[1]   # HARALD/
+DATA = ROOT / "data"
+DATA.mkdir(exist_ok=True)
+
+def embed(text: str):
+    r = requests.post(
+        "http://127.0.0.1:11434/api/embeddings",
+        json={"model": "harald-phi3", "prompt": text, "stream": False},
+        timeout=300,
+    )
+    return np.array(r.json()["embedding"], dtype="float32")
+
+docs, meta = [], []
+for path in ROOT.rglob("*"):
+    if path.suffix.lower() in {".md", ".json"} and path.stat().st_size > 0:
+        chunk = path.read_text(encoding="utf-8", errors="ignore")[:2048]
+        docs.append(embed(chunk))
+        meta.append({"path": str(path), "bytes": path.stat().st_size})
+
+vecs = np.stack(docs)
+index = faiss.IndexFlatL2(vecs.shape[1])
+index.add(vecs)
+
+faiss.write_index(index, DATA / "repo.index")
+json.dump(meta, open(DATA / "repo.meta.json", "w"))
+
+print(f"Ingested {len(meta)} files → {DATA}/repo.index")

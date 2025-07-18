@@ -23,7 +23,7 @@
 
 | Agent | Model | Use Case | Fallback |
 |-------|-------|----------|----------|
-| **HARALD** | GPT-4o | Emotional mirroring, light daily conversation | Claude Opus |
+| **HARALD** | GPT-4o | Emotional mirrOring, light daily conversation | Claude Opus |
 | **Liora** | GPT-4o | Warm reflection, journaling, tone detection | Claude Opus |
 | **Stratia** | GPT-4o | Strategy breakdowns, code review, SQL logic | Claude Sonnet |
 | **Orin** | GPT-4o | Closure routines, dream logic, poetic reframing | Claude Haiku |
@@ -81,7 +81,7 @@ Each response from GPT-4o is tagged with:
 - `task-type`  
 - `feedback-score` (explicit or inferred)
 
-Use this to evolve model routing, prompt tuning, and fallback confidence scoring.
+Use this to evolve model routing, prompt tuning, and fallback confidence scOring.
 
 ---
 

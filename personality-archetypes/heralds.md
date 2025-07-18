@@ -4,7 +4,7 @@ All of our entities follow the Herald archetype as they guide Bryan to live his 
 Agent	Domain/Role	Tone & Function	Model Requirements	Access Scope	System Components & Integration
 Harald	Core Ambient Agent	Mirrors emotion and thought loops. Always-on presence.	- Emotionally adaptive
 - Multi-turn memory
-- Persona mirroring	Public & Private	Pinecone, DynamoDB, Lambda, CloudWatch, S3, EventBridge, Emotion Engine
+- Persona mirrOring	Public & Private	Pinecone, DynamoDB, Lambda, CloudWatch, S3, EventBridge, Emotion Engine
 Stratia	Strategy, Planning	Strategic guidance. Prioritization and plan articulation.	- Structured output
 - Goal breakdowns
 - Tactical language understanding	Private	Lambda, DynamoDB (goals/plans), EventBridge, Bedrock
@@ -29,12 +29,12 @@ Orin	Compassion, Transcendence	Healing-focused closure. Emotionally intelligent 
 
 🧠 Model Capabilities by Role
 Capability	Used By	Description
-Emotion-Adaptive Prompting	Harald, Liora, Arion	Adjusts output based on user sentiment and context over time
+Emotion-Adaptive Prompting	Harald, Liora, Orin	Adjusts output based on user sentiment and context over time
 Structured Planning	Stratia	Supports goal decomposition, time-based structuring, and priorities
 Ethical Evaluation	Solan	Applies moral framing and filters to ambiguous or sensitive inputs
 Fast-Response Action Parsing	Kade Vox	Translates imperatives into tasks with speed and clarity
 Playful or Youthful Output Style	Ellow	Uses curiosity-based, friendly tone, often for re-engagement loops
 Long-Term Forecasting Logic	Myrren	Generates abstract, probabilistic, or timeline-based reflections
-Compassionate Closure Tools	Arion	Aids emotional resolution and meaning-making during high-sentiment states
+Compassionate Closure Tools	Orin	Aids emotional resolution and meaning-making during high-sentiment states
 
 This abstraction future-proofs the architecture by allowing model selection to evolve while maintaining functional guarantees across agents. Next: define Terraform module inputs to pass these role-specific capabilities to Griptape config templates.

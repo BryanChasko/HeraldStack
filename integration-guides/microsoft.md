@@ -14,7 +14,7 @@
 
 - **Zero-Trust**: Apply Zero-Trust principles across network, data, access, application, and governance controls.
 
-- **Monitoring & Logging**: Integrate Azure Monitor, Sentinel, and Azure AI Evaluations SDK in CI/CD for GenAIOps, feedback loops, and A/B testing.
+- **MonitOring & Logging**: Integrate Azure Monitor, Sentinel, and Azure AI Evaluations SDK in CI/CD for GenAIOps, feedback loops, and A/B testing.
 
 ## 3. Model Context Protocol (MCP) – Interoperable Agent Framework
 

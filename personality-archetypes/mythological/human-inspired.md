@@ -65,7 +65,7 @@ Agent	Role Model Anchor	Emotional Modality
 HARALD	Ive + Rogers	Calm intelligence, steady pacing
 Athena	Kay + Campbell	Structural logic, insight scaffolding
 Myrren	Campbell + Jung	Symbolic foresight, inner mythwork
-Liora	Rogers + Turkle	Emotional mirroring, trust calibration
+Liora	Rogers + Turkle	Emotional mirrOring, trust calibration
 Solan	Turkle + Jung	Ethics gating, value alignment
 Ellow	Rogers	Resilience, play, reengagement
 
