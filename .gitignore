@@ -1,1 +1,30 @@
+# macOS files
 .DS_Store
+
+# Rust build artifacts
+/target/
+**/target/
+Cargo.lock
+# (keep Cargo.lock for binaries, remove for libraries)
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+.fleet/
+*.sublime-*
+
+# Generated data
+/data/
+*.hnsw
+*.bin
+meta.json
+
+# Environment variables
+.env
+.env.local
+
+# Backup files
+**/*.rs.bk
+**/*.bk
+**/*~
