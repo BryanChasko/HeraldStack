@@ -1,4 +1,3 @@
-use hnsw_rs::prelude::AnnT;
 //! File ingestion module for semantic search indexing.
 //!
 //! This module handles the ingestion of files into a searchable vector index.
@@ -13,11 +12,10 @@ use hnsw_rs::prelude::AnnT;
 //! - This is a "module source file" - a unit of compilation within our crate
 //! - Part of the flat module style (modern) vs ingest/mod.rs (legacy)
 
-use std::{fs::File, path::PathBuf};
-
 use anyhow::{Context, Result};
-use hnsw_rs::{dist::DistCosine, prelude::*};
+use hnsw_rs::prelude::*;
 use serde_json::json;
+use std::{fs::File, path::PathBuf};
 use walkdir::WalkDir;
 
 use crate::embed;
@@ -42,6 +40,11 @@ const MAX_FILE_CHARS: usize = 800;
 const MAX_EMBEDDING_TOKENS: usize = 600;
 
 /// HNSW index construction parameters optimized for semantic search.
+///
+/// - `MAX_CONNECTIONS`: Maximum connections per node, controls index quality and memory usage
+/// - `EF_CONSTRUCTION`: Size of dynamic candidate list during construction, higher = better quality but slower build
+/// - `MAX_LAYER`: Maximum layer in the hierarchical structure, influences search performance
+/// - `EF_SEARCH`: Size of dynamic candidate list during search, higher = more accurate but slower search
 const HNSW_MAX_CONNECTIONS: usize = 16;
 const HNSW_EF_CONSTRUCTION: usize = 200;
 const HNSW_MAX_LAYER: usize = 16;
@@ -152,13 +155,17 @@ fn create_http_client() -> Result<reqwest::Client> {
 }
 
 /// Creates and configures an HNSW index for vector similarity search.
-fn create_hnsw_index() -> Hnsw<f32, DistCosine> {
-    Hnsw::<f32, DistCosine>::new(
+///
+/// # Returns
+/// A new HNSW index configured with optimal parameters for semantic search.
+// Fix: Add 'static lifetime to the HNSW index
+fn create_hnsw_index() -> Hnsw<'static, f32, DistanceType> {
+    Hnsw::<'static, f32, DistanceType>::new(
         HNSW_MAX_CONNECTIONS,
         HNSW_EF_CONSTRUCTION,
         HNSW_MAX_LAYER,
         HNSW_EF_SEARCH,
-        DistCosine::default(),
+        DistanceType::Cosine,
     )
 }
 
@@ -166,7 +173,8 @@ fn create_hnsw_index() -> Hnsw<f32, DistCosine> {
 async fn process_directory_tree(
     config: &IngestConfig,
     client: &reqwest::Client,
-    index: &Hnsw<f32, DistCosine>,
+    // Fix: Add explicit lifetime to the HNSW index reference
+    index: &Hnsw<'_, f32, DistanceType>,
     file_metadata: &mut Vec<PathBuf>,
     stats: &mut IngestStats,
 ) -> Result<()> {
@@ -216,11 +224,26 @@ fn is_supported_file(path: &std::path::Path) -> bool {
 }
 
 /// Processes a single file and adds it to the index.
+///
+/// # Arguments
+/// * `path` - Path to the file being processed
+/// * `config` - Configuration settings for ingestion
+/// * `client` - HTTP client for embedding API requests
+/// * `index` - HNSW index to insert embeddings into
+/// * `file_metadata` - Collection of file paths to track processed files
+/// * `file_id` - Unique identifier for this file in the index
+///
+/// # Returns
+/// Success if the file was processed and added to the index.
+///
+/// # Errors
+/// Returns error if file reading or embedding generation fails.
 async fn process_single_file(
     path: &std::path::Path,
     config: &IngestConfig,
     client: &reqwest::Client,
-    index: &Hnsw<f32, DistCosine>,
+    // Fix: Add explicit lifetime to the HNSW index reference
+    index: &Hnsw<'_, f32, DistanceType>,
     file_metadata: &mut Vec<PathBuf>,
     file_id: usize,
 ) -> Result<()> {
@@ -255,7 +278,7 @@ fn truncate_content(content: &str, max_chars: usize) -> &str {
 
 /// Persists the HNSW index and file metadata to disk.
 fn persist_index_data(
-    index: &Hnsw<f32, DistCosine>,
+    index: &Hnsw<'_, f32, DistanceType>,
     file_metadata: &[PathBuf],
     output_dir: &std::path::Path,
 ) -> Result<()> {
@@ -263,10 +286,11 @@ fn persist_index_data(
     std::fs::create_dir_all(output_dir)
         .with_context(|| format!("Failed to create output directory: {}", output_dir.display()))?;
 
-    // Save HNSW index
+    // Save HNSW index - use save() instead of dump()
     let index_path = output_dir.join("index");
     index
-        .dump(&index_path)
+        .save(index_path.to_str().unwrap()) // Use save() instead of dump()
+        .map_err(|e| anyhow::anyhow!("Failed to save HNSW index: {}", e))
         .with_context(|| format!("Failed to save HNSW index to: {}", index_path.display()))?;
 
     // Save metadata as JSON

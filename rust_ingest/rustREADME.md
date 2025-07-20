@@ -21,30 +21,23 @@ cargo run --release -- query "hello world"   # ask
 
 ## 💡 History
 
-2025-07-15 – Forked from Python FAISS script → Rust for speed & single-binary
-deploy.
+2025-07-15 – Started by taking an existing Python script that used FAISS for
+ vector search, and rewrote it in Rust. The goal was to make it faster and
+ easier to deploy as a single, self-contained binary, without needing Python
+ or extra dependencies.
 
-2025-07-17 – Switched to hnsw_rs – smaller binary, no native BLAS.
+2025-07-17 – Switched to hnsw_rs, a Rust library for fast vector search
+ using Hierarchical Navigable Small World (HNSW) graphs. This change made
+ the compiled program ("binary") smaller and removed the need for BLAS 
+ (Basic Linear Algebra Subprograms) libraries, which are external 
+ dependencies often used for mathematical operations in other 
+ vector search tools.
 
-2025-07-18 – Async embedding pipeline, 5× throughput on M3 Max.
+2025-07-18 – Changed the embedding process to run asynchronously (so it 
+doesn't wait for each file to finish before starting the next). This made
+the process about five times faster when tested on a MacBook with an Intel 
+processor.
 ```
-
-```text
-
-```
-
-```text
-2025-07-15 – Forked from Python FAISS script → Rust for speed & single-binary
-deploy.
-
-2025-07-17 – Switched to hnsw_rs – smaller binary, no native BLAS.
-
-2025-07-18 – Async embedding pipeline, 5× throughput on M3 Max.
-```
-
-2025-07-17 – Switched to hnsw_rs – smaller binary, no native BLAS.
-
-2025-07-18 – Async embedding pipeline, 5× throughput on M3 Max.
 
 ```text
 

@@ -155,13 +155,13 @@ pub async fn run_with_config(query: &str, config: QueryConfig) -> Result<QueryRe
 }
 
 /// Loads the HNSW index and file metadata from disk.
-fn load_index_and_metadata(config: &QueryConfig) -> Result<(Hnsw<f32, DistCosine>, Vec<PathBuf>)> {
+fn load_index_and_metadata(config: &QueryConfig) -> Result<(Hnsw<'_, f32, DistCosine>, Vec<PathBuf>)> {
     let data_dir = config.root_dir.join("data");
     
     // Load the HNSW index using the correct API
-    let index: Hnsw<f32, DistCosine> = Hnsw::file_load(&data_dir, "index")
-        .context("Failed to load HNSW index - ensure ingestion has been run")?
-        .0; // Extract the index from the tuple
+    // The file_load function doesn't exist, use the proper loading function
+    let index: Hnsw<'_, f32, DistCosine> = hnsw_rs::Hnsw::load_hnsw(&data_dir.join("index"))
+        .context("Failed to load HNSW index - ensure ingestion has been run")?;
     
     // Load file metadata
     let metadata_file = fs::File::open(data_dir.join("meta.json"))
@@ -185,7 +185,7 @@ async fn perform_semantic_search(
     query: &str,
     config: &QueryConfig,
     client: &reqwest::Client,
-    index: &Hnsw<f32, DistCosine>,
+    index: &Hnsw<'_, f32, DistCosine>,
 ) -> Result<Vec<Neighbour>> {
     // Convert query to embedding vector
     let query_embedding = embed::embed(query, config.max_query_tokens, client)
