@@ -1,10 +1,13 @@
-# HeraldStack (v0.0.1)
+# HeraldStack - Detailed Documentation
+
+**This is the detailed documentation for HeraldStack. For a quick overview,  
+see the [main README](../README.md).**
 
 **System**: Herald Ambient Intelligence + Companion Framework  
 **Author**: Bryan Chasko  
 **Initialized**: June 2025  
 
-## **README VERISON**: 2 | July 19 2025
+## **DOCUMENTATION VERSION**: 2 | July 19 2025
 
 ---
 
