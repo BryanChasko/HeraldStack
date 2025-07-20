@@ -7,58 +7,58 @@ issue tracking, and project management.
 
 ## Labels System
 
-We use a color-blind friendly labeling system to categorize
-issues and pull requests:
+We use a color-blind friendly labeling system to categorize issues and pull
+requests:
 
 ### Core Technical Areas
 
-| Label | Description | Color |
-|-------|-------------|-------|
-| `rust` | Rust codebase implementation | #0052CC |
-| `ingest` | File ingestion and indexing pipeline | #006644 |
-| `query` | Search and retrieval functionality | #5319E7 |
-| `embed` | Vector embedding generation and processing | #E05D44 |
-| `memory` | Memory storage and retrieval systems | #F9A03F |
+| Label    | Description                                | Color   |
+| -------- | ------------------------------------------ | ------- |
+| `rust`   | Rust codebase implementation               | #0052CC |
+| `ingest` | File ingestion and indexing pipeline       | #006644 |
+| `query`  | Search and retrieval functionality         | #5319E7 |
+| `embed`  | Vector embedding generation and processing | #E05D44 |
+| `memory` | Memory storage and retrieval systems       | #F9A03F |
 
 ### Issue Types
 
-| Label | Description | Color |
-|-------|-------------|-------|
-| `bug` | Functionality issues requiring fixes | #D93F0B |
-| `enhancement` | New features and improvements | #0E8A16 |
-| `refactor` | Code restructuring without behavior change | #1D76DB |
-| `documentation` | Documentation updates and improvements | #FFC01F |
-| `testing` | Test coverage and infrastructure | #8250DF |
+| Label           | Description                                | Color   |
+| --------------- | ------------------------------------------ | ------- |
+| `bug`           | Functionality issues requiring fixes       | #D93F0B |
+| `enhancement`   | New features and improvements              | #0E8A16 |
+| `refactor`      | Code restructuring without behavior change | #1D76DB |
+| `documentation` | Documentation updates and improvements     | #FFC01F |
+| `testing`       | Test coverage and infrastructure           | #8250DF |
 
 ### Priority & Status
 
-| Label | Description | Color |
-|-------|-------------|-------|
-| `critical` | Requires immediate attention | #B60205 |
-| `high` | High priority for current sprint | #D93F0B |
-| `medium` | Standard priority task | #FBCA04 |
-| `low` | Nice to have, not time-sensitive | #C5DEF5 |
-| `in-progress` | Actively being worked on | #0E8A16 |
-| `blocked` | Waiting on dependencies or decisions | #D876E3 |
+| Label         | Description                          | Color   |
+| ------------- | ------------------------------------ | ------- |
+| `critical`    | Requires immediate attention         | #B60205 |
+| `high`        | High priority for current sprint     | #D93F0B |
+| `medium`      | Standard priority task               | #FBCA04 |
+| `low`         | Nice to have, not time-sensitive     | #C5DEF5 |
+| `in-progress` | Actively being worked on             | #0E8A16 |
+| `blocked`     | Waiting on dependencies or decisions | #D876E3 |
 
 ### Architecture Components
 
-| Label | Description | Color |
-|-------|-------------|-------|
-| `entity-system` | Entity framework and routing | #6F42C1 (Purple) |
-| `vector-store` | Pinecone and vector storage integration | #1A73E8 (Google Blue) |
-| `infrastructure` | AWS and deployment infrastructure | #FF6D00 (Dark Orange) |
-| `cli` | Command-line interface | #795548 (Brown) |
-| `security` | Security and authentication concerns | #EE0701 (Bright Red) |
+| Label            | Description                             | Color                 |
+| ---------------- | --------------------------------------- | --------------------- |
+| `entity-system`  | Entity framework and routing            | #6F42C1 (Purple)      |
+| `vector-store`   | Pinecone and vector storage integration | #1A73E8 (Google Blue) |
+| `infrastructure` | AWS and deployment infrastructure       | #FF6D00 (Dark Orange) |
+| `cli`            | Command-line interface                  | #795548 (Brown)       |
+| `security`       | Security and authentication concerns    | #EE0701 (Bright Red)  |
 
 ### Housekeeping
 
-| Label | Description | Color |
-|-------|-------------|-------|
-| `duplicate` | Issue already exists elsewhere | #CCCCCC (Light Grey) |
-| `invalid` | Issue doesn't apply or is incorrect | #E4E669 (Pale Yellow) |
-| `question` | Requires clarification or discussion | #D876E3 (Pink) |
-| `wontfix` | Decision made not to fix or implement | #FBBF24 (Gold) |
+| Label       | Description                           | Color                 |
+| ----------- | ------------------------------------- | --------------------- |
+| `duplicate` | Issue already exists elsewhere        | #CCCCCC (Light Grey)  |
+| `invalid`   | Issue doesn't apply or is incorrect   | #E4E669 (Pale Yellow) |
+| `question`  | Requires clarification or discussion  | #D876E3 (Pink)        |
+| `wontfix`   | Decision made not to fix or implement | #FBBF24 (Gold)        |
 
 ## Branch Strategy
 
@@ -66,7 +66,8 @@ We follow a simplified GitHub flow:
 
 1. `main` branch is always deployable
 2. Feature branches named `feature/<description>` branch off from `main`
-3. Bug fix branches named `fix/<issue-number>-<description>` branch off from `main`
+3. Bug fix branches named `fix/<issue-number>-<description>` branch off from
+   `main`
 4. Pull requests merge back to `main` after review
 
 ## Pull Request Process

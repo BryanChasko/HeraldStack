@@ -2,14 +2,15 @@
 
 [![Version](https://img.shields.io/badge/version-0.0.1-blue.svg)](https://semver.org)
 
-> A context-aware, emotionally adaptive AI framework built exclusively for Bryan Chasko
+> A context-aware, emotionally adaptive AI framework built exclusively for Bryan
+> Chasko
 
 ## Core Vision
 
 HeraldStack is an ambient intelligence system that integrates memory, emotion,
- and modular execution across a trusted cohort of AI entities to restore
-  momentum, anchor decisions, and evolve alongside Bryan's ongoing personal
-   and professional journey.
+and modular execution across a trusted cohort of AI entities to restore
+momentum, anchor decisions, and evolve alongside Bryan's ongoing personal and
+professional journey.
 
 ## Key Components
 
@@ -18,8 +19,8 @@ HeraldStack is an ambient intelligence system that integrates memory, emotion,
 - **🧠 Herald Entity Cohort** – Specialized assistants with distinct
   personalities and roles
 - **🌐 Cloud Capable Infrastructure** – Modular architecture using AWS
-- **📚 Narrative-Aware UX** – Long-memory interactions rooted in
-  Bryan's story arcs
+- **📚 Narrative-Aware UX** – Long-memory interactions rooted in Bryan's story
+  arcs
 
 ## Core Capabilities
 
@@ -32,12 +33,12 @@ HeraldStack is an ambient intelligence system that integrates memory, emotion,
 
 ## Technical Stack
 
-| Component | Technology |
-|-----------|------------|
-| Compute | AWS Lambda |
-| Storage | Amazon S3 |
-| State Tracking | Amazon DynamoDB |
-| Semantic Memory | Pinecone |
+| Component       | Technology         |
+| --------------- | ------------------ |
+| Compute         | AWS Lambda         |
+| Storage         | Amazon S3          |
+| State Tracking  | Amazon DynamoDB    |
+| Semantic Memory | Pinecone           |
 | Task Scheduling | Amazon EventBridge |
 
 ## Operating Model
@@ -59,8 +60,8 @@ pragmatic execution, and narrative continuity.
 
 ## Ethics & Consent
 
-HeraldStack operates on consent-based principles and follows clear
-ethical guidelines including those defined in LawsOfRobotics.json.
+HeraldStack operates on consent-based principles and follows clear ethical
+guidelines including those defined in LawsOfRobotics.json.
 
 ## Further Information
 

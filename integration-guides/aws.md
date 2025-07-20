@@ -6,7 +6,8 @@
 
 ## 1. Purpose
 
-Design and deploy a multi-agent, identity-aware ambient intelligence system (**HARALD**) on AWS, aligned with:
+Design and deploy a multi-agent, identity-aware ambient intelligence system
+(**HARALD**) on AWS, aligned with:
 
 - **ISO/IEC 27001** (Information Security)
 - **ISO/IEC 25010** (Software Quality)
@@ -27,7 +28,8 @@ Design and deploy a multi-agent, identity-aware ambient intelligence system (**H
 
 - **Stack Codename:** HARALDSTACK
 - **Primary Region:** us-east-1
-- **Multi-Account Strategy:** Purpose-based accounts (e.g., dev, prod, training, observability)
+- **Multi-Account Strategy:** Purpose-based accounts (e.g., dev, prod, training,
+  observability)
 
 **Core Capabilities:**
 
@@ -75,7 +77,8 @@ IAM Identity Center (Federated Access)
 
 ### 4.2 GenAI Core
 
-- **Amazon Bedrock Agents:** Tool-planning, knowledge base access, action group orchestration
+- **Amazon Bedrock Agents:** Tool-planning, knowledge base access, action group
+  orchestration
 - **LlamaIndex + LangGraph (Hybrid):** Agentic RAG for external sources
 - **Guardrails:** Content moderation, prompt filtering, token quota limits
 
@@ -88,7 +91,8 @@ IAM Identity Center (Federated Access)
 ### 4.4 Offline Support
 
 - **Local SQLite or S3 Sync Cache**
-- **LLM Execution:** (ONNX/PyTorch Mobile) with fallback templates for key agent behaviors
+- **LLM Execution:** (ONNX/PyTorch Mobile) with fallback templates for key agent
+  behaviors
 - **RAG subset prefetching:** via Lambda scheduler (EventBridge)
 
 ### 4.5 Multi-Agent Flow
@@ -122,12 +126,12 @@ IAM Identity Center (Federated Access)
 
 ## 6. Compliance Mapping
 
-| ISO/IEC Standard | Control         | HARALDSTACK Implementation                        |
-|------------------|-----------------|---------------------------------------------------|
-| 27001            | A.9, A.10       | IAM Identity Center, OIDC, Guardrails             |
-| 25010            | Maintainability  | Modular agents + IaC via Terraform                |
-| 42010            | Architecture    | Layered cloud-native service model                |
-| 38505            | Data Governance | Cost-aware exec, PII policy, audit logs           |
+| ISO/IEC Standard | Control         | HARALDSTACK Implementation              |
+| ---------------- | --------------- | --------------------------------------- |
+| 27001            | A.9, A.10       | IAM Identity Center, OIDC, Guardrails   |
+| 25010            | Maintainability | Modular agents + IaC via Terraform      |
+| 42010            | Architecture    | Layered cloud-native service model      |
+| 38505            | Data Governance | Cost-aware exec, PII policy, audit logs |
 
 ---
 
@@ -154,20 +158,22 @@ IAM Identity Center (Federated Access)
 
 ## References
 
-Authoritative AWS references for understanding best practices in building Generative AI systems:
+Authoritative AWS references for understanding best practices in building
+Generative AI systems:
 
 1. **Best Practices for Building Generative AI Applications on AWS**  
-    [Read](https://aws.amazon.com/blogs/machine-learning/best-practices-to-build-generative-ai-applications-on-aws/)
+   [Read](https://aws.amazon.com/blogs/machine-learning/best-practices-to-build-generative-ai-applications-on-aws/)
 
-2. **Best Practices for Building Robust GenAI Applications with Amazon Bedrock Agents (Part 1)**  
-    [Read](https://aws.amazon.com/blogs/machine-learning/best-practices-for-building-robust-generative-ai-applications-with-amazon-bedrock-agents-part-1/)
+2. **Best Practices for Building Robust GenAI Applications with Amazon Bedrock
+   Agents (Part 1)**  
+   [Read](https://aws.amazon.com/blogs/machine-learning/best-practices-for-building-robust-generative-ai-applications-with-amazon-bedrock-agents-part-1/)
 
-3. **Best Practices for Building Robust GenAI Applications with Amazon Bedrock Agents (Part 2)**  
-    [Read](https://aws.amazon.com/blogs/machine-learning/best-practices-for-building-robust-generative-ai-applications-with-amazon-bedrock-agents-part-2/)
+3. **Best Practices for Building Robust GenAI Applications with Amazon Bedrock
+   Agents (Part 2)**  
+   [Read](https://aws.amazon.com/blogs/machine-learning/best-practices-for-building-robust-generative-ai-applications-with-amazon-bedrock-agents-part-2/)
 
 4. **AWS Audit Manager Framework: Generative AI Best Practices (v2)**  
-    [Read](https://docs.aws.amazon.com/audit-manager/latest/userguide/aws-generative-ai-best-practices.html)
+   [Read](https://docs.aws.amazon.com/audit-manager/latest/userguide/aws-generative-ai-best-practices.html)
 
 5. **Architectural Guidelines & Best Practices for Amazon Bedrock**  
-    [Read](https://www.linkedin.com/pulse/architectural-guidelines-best-practices-aws-bedrock-choo-yang-tan-ilgqc)
-
+   [Read](https://www.linkedin.com/pulse/architectural-guidelines-best-practices-aws-bedrock-choo-yang-tan-ilgqc)

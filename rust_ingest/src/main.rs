@@ -9,10 +9,7 @@
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
-
-mod embed;
-mod ingest;
-mod query;
+use rust_ingest::{ingest_run, query_run};
 
 /// Command-line interface for HARALD semantic search system.
 ///
@@ -92,7 +89,7 @@ async fn main() -> Result<()> {
             max_tokens,
         } => {
             // Create ingest configuration
-            let mut config = ingest::IngestConfig::default();
+            let mut config = rust_ingest::ingest::IngestConfig::default();
 
             if let Some(root_dir) = root {
                 config.root_dir = root_dir;

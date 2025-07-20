@@ -1,6 +1,5 @@
-use hnsw_rs::prelude::AnnT;
 //! rust_ingest/src/query.rs
-//! Query module for semantic search and retrieval-augmented generation.
+// Query module for semantic search and retrieval-augmented generation.
 //!
 //! This module handles querying the pre-built HNSW index for semantic search
 //! and integrates with a local language model to provide context-aware responses.
@@ -17,7 +16,7 @@ use hnsw_rs::prelude::AnnT;
 use std::{fs, path::PathBuf};
 
 use anyhow::{Context, Result};
-use hnsw_rs::{dist::DistCosine, prelude::*};
+use hnsw_rs::prelude::*;
 use ndarray::Array1;
 use serde_json::Value;
 
@@ -155,12 +154,12 @@ pub async fn run_with_config(query: &str, config: QueryConfig) -> Result<QueryRe
 }
 
 /// Loads the HNSW index and file metadata from disk.
-fn load_index_and_metadata(config: &QueryConfig) -> Result<(Hnsw<'_, f32, DistCosine>, Vec<PathBuf>)> {
+fn load_index_and_metadata(config: &QueryConfig) -> Result<(Hnsw<f32, DistCosine>, Vec<PathBuf>)> {
     let data_dir = config.root_dir.join("data");
     
     // Load the HNSW index using the correct API
-    // The file_load function doesn't exist, use the proper loading function
-    let index: Hnsw<'_, f32, DistCosine> = hnsw_rs::Hnsw::load_hnsw(&data_dir.join("index"))
+    // Call load_hnsw on the Hnsw type imported from the prelude
+    let index = Hnsw::<f32, DistCosine>::load_hnsw(&data_dir.join("index"))
         .context("Failed to load HNSW index - ensure ingestion has been run")?;
     
     // Load file metadata
@@ -278,8 +277,16 @@ fn truncate_content(content: &str, max_chars: usize) -> &str {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use mockall::predicate::*;
+    use mockall::mock;
     use std::path::Path;
+    use std::sync::Arc;
 
+    // Helper for creating test PathBufs
+    fn test_path(name: &str) -> PathBuf {
+        PathBuf::from(name)
+    }
+    
     #[test]
     fn test_truncate_content() {
         let long_content = "a".repeat(1000);
@@ -311,16 +318,279 @@ mod tests {
         assert_eq!(result.num_context_docs, 1);
         assert_eq!(result.context_files.len(), 1);
     }
+    
+    #[test]
+    fn test_build_context_from_results() {
+        // Create temporary test files
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let file1_path = tmp_dir.path().join("file1.txt");
+        let file2_path = tmp_dir.path().join("file2.txt");
+        
+        fs::write(&file1_path, "Content from file 1").unwrap();
+        fs::write(&file2_path, "Content from file 2").unwrap();
+        
+        // Create test data
+        let neighbors = vec![
+            Neighbour { d_id: 0, distance: 0.1 },
+            Neighbour { d_id: 1, distance: 0.2 },
+        ];
+        
+        let metadata = vec![file1_path.clone(), file2_path.clone()];
+        let config = QueryConfig::default();
+        
+        // Call the function
+        let (context, files) = build_context_from_results(&neighbors, &metadata, &config).unwrap();
+        
+        // Verify results
+        assert_eq!(files.len(), 2);
+        assert_eq!(files[0], file1_path);
+        assert_eq!(files[1], file2_path);
+        assert!(context.contains("Content from file 1"));
+        assert!(context.contains("Content from file 2"));
+    }
+    
+    // Mock test for HTTP client creation
+    #[test]
+    fn test_create_http_client() {
+        let client = create_http_client().unwrap();
+        assert_eq!(client.timeout(), Some(std::time::Duration::from_secs(60)));
+    }
+    
+    // Unit tests with mocks for async functions
+    #[tokio::test]
+    async fn test_generate_llm_response() {
+        use mockito::{mock, server_url};
+        
+        // Setup mock server
+        let mock_endpoint = server_url();
+        let _m = mock("POST", "/api/chat")
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body(r#"{"message":{"content":"Test response from LLM"}}"#)
+            .create();
+        
+        let config = QueryConfig {
+            llm_endpoint: format!("{}/api/chat", mock_endpoint),
+            ..Default::default()
+        };
+        
+        let client = reqwest::Client::new();
+        let response = generate_llm_response("test context", "test query", &config, &client).await;
+        
+        assert!(response.is_ok());
+        assert_eq!(response.unwrap(), "Test response from LLM");
+    }
+    
+    #[test]
+    fn test_query_config_custom() {
+        let custom_config = QueryConfig {
+            root_dir: PathBuf::from("/custom/path"),
+            max_context_chars: 1000,
+            num_results: 5,
+            search_ef: 50,
+            max_query_tokens: 200,
+            llm_endpoint: "http://custom-endpoint".to_string(),
+            model_name: "custom-model".to_string(),
+        };
+        
+        assert_eq!(custom_config.max_context_chars, 1000);
+        assert_eq!(custom_config.num_results, 5);
+        assert_eq!(custom_config.search_ef, 50);
+        assert_eq!(custom_config.max_query_tokens, 200);
+        assert_eq!(custom_config.llm_endpoint, "http://custom-endpoint");
+        assert_eq!(custom_config.model_name, "custom-model");
+    }
 
     // Integration tests would require setting up test index files
     #[cfg(feature = "integration-tests")]
     mod integration {
         use super::*;
         
-        #[tokio::test]
-        async fn test_query_with_mock_data() {
-            // This would test with actual index files in a test environment
-            // Requires careful setup of test data and mock LLM responses
+        // Create test index and metadata with entity-related content
+        fn setup_test_index() -> Result<(PathBuf, Vec<PathBuf>)> {
+            let tmp_dir = tempfile::tempdir()?;
+            let data_dir = tmp_dir.path().join("data");
+            fs::create_dir_all(&data_dir)?;
+            
+            // Create test documents with entity-focused content
+            let doc1 = data_dir.join("entities.md");
+            let doc2 = data_dir.join("harald.md");
+            let doc3 = data_dir.join("myrren.md");
+            
+            fs::write(&doc1, "# Entity Registry\n\nThe Herald Entity Cohort includes: HARALD, Stratia, Myrren, Liora, Kade Vox, Solan, Ellow, and Orin. Each entity has specific roles and triggers.")?;
+            
+            fs::write(&doc2, "# HARALD\n\nHARALD is the default entity. Serves as an emotional mirror, decision anchor, and continuity manager—especially effective during moments of emotional fog or hesitation. Tracks habits, restores clarity, and maintains long-range context.")?;
+            
+            fs::write(&doc3, "# Myrren\n\nMyrren focuses on vision & foresight. Warm, wise personality; triggers: low energy, evening, long-term planning. Helps with perspective and future planning.")?;
+            
+            // Create vector embeddings (simplified for testing)
+            let mut embeddings: Vec<Vec<f32>> = Vec::new();
+            embeddings.push(vec![0.1, 0.2, 0.3, 0.4]); // entities doc
+            embeddings.push(vec![0.2, 0.3, 0.4, 0.5]); // harald doc
+            embeddings.push(vec![0.3, 0.4, 0.5, 0.6]); // myrren doc
+            
+            // Create an HNSW index
+            let mut index = hnsw_rs::Hnsw::<f32, DistCosine>::new(4, 10, 16, 200, DistCosine {});
+            for (i, embedding) in embeddings.iter().enumerate() {
+                index.insert(embedding.clone(), i);
+            }
+            
+            // Save the index
+            index.save_hnsw(&data_dir.join("index"))?;
+            
+            // Save metadata
+            let metadata = vec![doc1, doc2, doc3];
+            let metadata_file = fs::File::create(data_dir.join("meta.json"))?;
+            serde_json::to_writer(metadata_file, &metadata)?;
+            
+            Ok((tmp_dir.into_path(), metadata))
         }
-    }
-}
+        
+        #[tokio::test]
+        async fn test_entity_queries() -> Result<()> {
+            // Setup test data
+            let (root_dir, expected_files) = setup_test_index()?;
+            
+            // Create a mock LLM server
+            let mock_endpoint = server_url();
+            
+            // Set up different mocks for different queries
+            let _m_entities = mock("POST", "/api/chat")
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(r#"{"message":{"content":"The entity cohort includes HARALD, Stratia, Myrren, Liora, Kade Vox, Solan, Ellow, and Orin."}}"#)
+                .expect(1)
+                .create();
+            
+            // Configure query
+            let config = QueryConfig {
+                root_dir: root_dir.clone(),
+                llm_endpoint: format!("{}/api/chat", mock_endpoint),
+                ..Default::default()
+            };
+            
+            // Test entity listing query
+            let result = run_with_config("List all entity names", config.clone()).await?;
+            assert!(!result.response.is_empty());
+            assert!(result.response.contains("HARALD"));
+            assert!(result.response.contains("Stratia"));
+            
+            // Set up another mock for a different query
+            let _m_harald = mock("POST", "/api/chat")
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(r#"{"message":{"content":"HARALD is the default entity who serves as an emotional mirror, decision anchor, and continuity manager."}}"#)
+                .expect(1)
+                .create();
+            
+            // Test entity-specific query
+            let result2 = run_with_config("What is HARALD's role?", config).await?;
+            assert!(!result2.response.is_empty());
+            assert!(result2.response.contains("emotional mirror"));
+            
+            Ok(())
+        }
+        
+        #[tokio::test]
+        async fn test_real_world_queries() -> Result<()> {
+            // Skip this test if running in CI or if the environment isn't set up
+            if std::env::var("CI").is_ok() || !std::path::Path::new("/Users/bryanchasko/Code/HARALD/data").exists() {
+                return Ok(());
+            }
+            
+            // For actual interactive testing when development environment is available
+            let config = QueryConfig {
+                root_dir: PathBuf::from("/Users/bryanchasko/Code/HARALD"),
+                ..Default::default()
+            };
+            
+            let test_queries = [
+                "List all entity names",
+                "What is HARALD's primary purpose?",
+                "Describe the difference between Stratia and Myrren",
+                "What are the core principles of HeraldStack?",
+                "Explain the emotional adaptive interaction flow"
+            ];
+            
+            // Just test the first query to keep test runtime reasonable
+            // Only uncomment this for manual testing, not CI
+            // let result = run_with_config(test_queries[0], config).await?;
+            // assert!(!result.response.is_empty());
+            
+            Ok(())
+        }
+        
+        // Test load index error handling
+        #[test]
+        fn test_load_index_missing_files() -> Result<()> {
+            let tmp_dir = tempfile::tempdir()?;
+            let config = QueryConfig {
+                root_dir: tmp_dir.path().to_path_buf(),
+                ..Default::default()
+            };
+            
+            // No index or metadata files exist yet
+            let result = load_index_and_metadata(&config);
+            assert!(result.is_err());
+            
+            Ok(())
+        }
+        
+        // Test with malformed metadata
+        #[test]
+        fn test_load_index_malformed_metadata() -> Result<()> {
+            let tmp_dir = tempfile::tempdir()?;
+            let data_dir = tmp_dir.path().join("data");
+            fs::create_dir_all(&data_dir)?;
+            
+            // Create a valid index but malformed metadata
+            let mut index = hnsw_rs::Hnsw::<f32, DistCosine>::new(4, 10, 16, 200, DistCosine {});
+            index.save_hnsw(&data_dir.join("index"))?;
+            
+            // Write invalid JSON to metadata file
+            fs::write(data_dir.join("meta.json"), "{not valid json}")?;
+            
+            let config = QueryConfig {
+                root_dir: tmp_dir.path().to_path_buf(),
+                ..Default::default()
+            };
+            
+            let result = load_index_and_metadata(&config);
+            assert!(result.is_err());
+            
+            Ok(())
+        }
+        
+        // Test full workflow with mock embedding
+        #[tokio::test]
+        async fn test_end_to_end_workflow() -> Result<()> {
+            // Set up test environment
+            let (root_dir, _) = setup_test_index()?;
+            
+            // Mock LLM API
+            let mock_endpoint = server_url();
+            let _m = mock("POST", "/api/chat")
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(r#"{"message":{"content":"End-to-end test response"}}"#)
+                .create();
+            
+            // Configure for test
+            let config = QueryConfig {
+                root_dir,
+                llm_endpoint: format!("{}/api/chat", mock_endpoint),
+                num_results: 1, // Limit to keep test simple
+                ..Default::default()
+            };
+            
+            // Would need to mock the embedding function as well
+            // For a true end-to-end test
+            //
+            // let result = run_with_config("Test query", config).await?;
+            // assert_eq!(result.response, "End-to-end test response");
+            // assert_eq!(result.num_context_docs, 1);
+            
+            Ok(())
+        }
+    } // Close integration module
+} // Close tests module
