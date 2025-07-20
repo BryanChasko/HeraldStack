@@ -9,7 +9,8 @@
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
-use rust_ingest::{ingest_run, query_run};
+use rust_ingest::query::QueryConfig;
+use rust_ingest::{ingest, query};
 
 /// Command-line interface for HARALD semantic search system.
 ///
@@ -122,18 +123,20 @@ async fn main() -> Result<()> {
             // Join prompt words into a single query string
             let query_text = prompt.join(" ");
 
-            // Create query configuration
-            let mut config = query::QueryConfig::default();
-            config.num_results = num_results;
-            config.max_context_chars = max_context_chars;
-            config.llm_endpoint = llm_endpoint;
-            config.model_name = model_name;
+            // Create query configuration with all options set at initialization
+            let config = QueryConfig {
+                num_results,
+                max_context_chars,
+                llm_endpoint,
+                model_name,
+                ..Default::default()
+            };
 
             // Execute query
             let result = query::run_with_config(&query_text, config).await?;
 
             // Display results
-            println!("🔍 Query: {}", query_text);
+            println!("🔍 Query: {query_text}");
             println!("📚 Context from {} documents:", result.num_context_docs);
             for (i, file) in result.context_files.iter().enumerate() {
                 println!("  {}. {}", i + 1, file.display());

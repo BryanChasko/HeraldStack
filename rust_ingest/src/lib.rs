@@ -1,5 +1,5 @@
 //! Library component of rust_ingest.
-//! 
+//!
 //! This file exposes the core functionality as a library,
 //! which allows it to be imported by other crates and
 //! enables proper testing of the components.

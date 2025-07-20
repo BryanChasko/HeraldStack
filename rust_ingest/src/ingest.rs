@@ -21,7 +21,7 @@ use walkdir::WalkDir;
 use crate::embed;
 
 /// Directories to skip during file traversal.
-/// 
+///
 /// These directories typically contain:
 /// - Version control metadata (.git)
 /// - Virtual environments (.venv)
@@ -29,7 +29,7 @@ use crate::embed;
 const SKIP_DIRS: &[&str] = &[".git", ".venv", "target", "node_modules"];
 
 /// Maximum number of characters to read from each file for embedding.
-/// 
+///
 /// This limit serves multiple purposes:
 /// - Controls API costs for embedding services
 /// - Prevents memory issues with extremely large files
@@ -44,11 +44,11 @@ const MAX_EMBEDDING_TOKENS: usize = 600;
 /// - `MAX_CONNECTIONS`: Maximum connections per node, controls index quality and memory usage
 /// - `EF_CONSTRUCTION`: Size of dynamic candidate list during construction, higher = better quality but slower build
 /// - `MAX_LAYER`: Maximum layer in the hierarchical structure, influences search performance
-/// - `EF_SEARCH`: Size of dynamic candidate list during search, higher = more accurate but slower search
+/// - `MAX_ELEMENTS`: Maximum number of elements that can be stored in the index
 const HNSW_MAX_CONNECTIONS: usize = 16;
+const HNSW_MAX_ELEMENTS: usize = 100_000;
 const HNSW_EF_CONSTRUCTION: usize = 200;
 const HNSW_MAX_LAYER: usize = 16;
-const HNSW_EF_SEARCH: usize = 20;
 
 /// Progress reporting interval (number of files).
 const PROGRESS_INTERVAL: usize = 10;
@@ -158,14 +158,13 @@ fn create_http_client() -> Result<reqwest::Client> {
 ///
 /// # Returns
 /// A new HNSW index configured with optimal parameters for semantic search.
-// Fix: Add 'static lifetime to the HNSW index
-fn create_hnsw_index() -> Hnsw<'static, f32, DistanceType> {
-    Hnsw::<'static, f32, DistanceType>::new(
+fn create_hnsw_index() -> Hnsw<'static, f32, DistCosine> {
+    Hnsw::<'static, f32, DistCosine>::new(
         HNSW_MAX_CONNECTIONS,
-        HNSW_EF_CONSTRUCTION,
+        HNSW_MAX_ELEMENTS,
         HNSW_MAX_LAYER,
-        HNSW_EF_SEARCH,
-        DistanceType::Cosine,
+        HNSW_EF_CONSTRUCTION,
+        DistCosine {},
     )
 }
 
@@ -173,8 +172,7 @@ fn create_hnsw_index() -> Hnsw<'static, f32, DistanceType> {
 async fn process_directory_tree(
     config: &IngestConfig,
     client: &reqwest::Client,
-    // Fix: Add explicit lifetime to the HNSW index reference
-    index: &Hnsw<'_, f32, DistanceType>,
+    index: &Hnsw<'_, f32, DistCosine>,
     file_metadata: &mut Vec<PathBuf>,
     stats: &mut IngestStats,
 ) -> Result<()> {
@@ -194,7 +192,16 @@ async fn process_directory_tree(
             continue;
         }
 
-        match process_single_file(path, config, client, index, file_metadata, stats.files_processed).await {
+        match process_single_file(
+            path,
+            config,
+            client,
+            index,
+            file_metadata,
+            stats.files_processed,
+        )
+        .await
+        {
             Ok(()) => {
                 stats.files_processed += 1;
                 if stats.files_processed % PROGRESS_INTERVAL == 0 {
@@ -213,14 +220,16 @@ async fn process_directory_tree(
 
 /// Determines if a path should be skipped during traversal.
 fn should_skip_path(path: &std::path::Path) -> bool {
-    path.is_dir() && SKIP_DIRS.iter().any(|&dir| path.ends_with(dir))
+    // Skip either directories that match our skip patterns
+    // or any path that ends with these patterns (like .git)
+    SKIP_DIRS.iter().any(|&dir| path.ends_with(dir))
 }
 
 /// Checks if a file has a supported extension for indexing.
 fn is_supported_file(path: &std::path::Path) -> bool {
     path.extension()
         .and_then(|ext| ext.to_str())
-        .map_or(false, |ext| SUPPORTED_EXTENSIONS.contains(&ext))
+        .is_some_and(|ext| SUPPORTED_EXTENSIONS.contains(&ext))
 }
 
 /// Processes a single file and adds it to the index.
@@ -242,15 +251,14 @@ async fn process_single_file(
     path: &std::path::Path,
     config: &IngestConfig,
     client: &reqwest::Client,
-    // Fix: Add explicit lifetime to the HNSW index reference
-    index: &Hnsw<'_, f32, DistanceType>,
+    index: &Hnsw<'_, f32, DistCosine>,
     file_metadata: &mut Vec<PathBuf>,
     file_id: usize,
 ) -> Result<()> {
     // Read and truncate file content
     let content = std::fs::read_to_string(path)
         .with_context(|| format!("Failed to read file: {}", path.display()))?;
-    
+
     let truncated_content = truncate_content(&content, config.max_chars);
 
     // Generate embedding vector
@@ -278,26 +286,40 @@ fn truncate_content(content: &str, max_chars: usize) -> &str {
 
 /// Persists the HNSW index and file metadata to disk.
 fn persist_index_data(
-    index: &Hnsw<'_, f32, DistanceType>,
+    index: &Hnsw<'_, f32, DistCosine>,
     file_metadata: &[PathBuf],
     output_dir: &std::path::Path,
 ) -> Result<()> {
     // Create output directory
-    std::fs::create_dir_all(output_dir)
-        .with_context(|| format!("Failed to create output directory: {}", output_dir.display()))?;
+    std::fs::create_dir_all(output_dir).with_context(|| {
+        format!(
+            "Failed to create output directory: {}",
+            output_dir.display()
+        )
+    })?;
 
-    // Save HNSW index - use save() instead of dump()
-    let index_path = output_dir.join("index");
+    // Save HNSW index using file_dump method
+    let file_basename = "index";
     index
-        .save(index_path.to_str().unwrap()) // Use save() instead of dump()
+        .file_dump(output_dir, file_basename)
         .map_err(|e| anyhow::anyhow!("Failed to save HNSW index: {}", e))
-        .with_context(|| format!("Failed to save HNSW index to: {}", index_path.display()))?;
+        .with_context(|| {
+            format!(
+                "Failed to save HNSW index to: {}/{}",
+                output_dir.display(),
+                file_basename
+            )
+        })?;
 
     // Save metadata as JSON
     let metadata_path = output_dir.join("meta.json");
-    let metadata_file = File::create(&metadata_path)
-        .with_context(|| format!("Failed to create metadata file: {}", metadata_path.display()))?;
-    
+    let metadata_file = File::create(&metadata_path).with_context(|| {
+        format!(
+            "Failed to create metadata file: {}",
+            metadata_path.display()
+        )
+    })?;
+
     serde_json::to_writer(metadata_file, &json!(file_metadata))
         .with_context(|| format!("Failed to write metadata to: {}", metadata_path.display()))?;
 
@@ -330,7 +352,7 @@ mod tests {
     fn test_truncate_content() {
         let long_content = "a".repeat(1000);
         assert_eq!(truncate_content(&long_content, 500).len(), 500);
-        
+
         let short_content = "short";
         assert_eq!(truncate_content(short_content, 500), "short");
     }

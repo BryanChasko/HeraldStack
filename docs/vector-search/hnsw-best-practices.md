@@ -1,26 +1,60 @@
 # HNSW Best Practices
 
-<!-- markdownlint-disable MD052 -->
+<!-- markdownlint-disable MD052 MD013 MD024 MD051 -->
 
-This file contains code examples with syntax that may trigger MD052
-"Reference not found" warnings, but they are valid code samples. This rule
-has been disabled at the top of the file.
+This file contains code examples with syntax that may trigger MD052 "Reference
+not found" warnings, but they are valid code samples. This rule has been
+disabled at the top of the file.
 
-<!-- markdownlint-disable-file MD052 -->
+<!-- markdownlint-disable-file MD052 MD013 MD024 MD051 -->
 
 This document outlines best practices for working with Hierarchical Navigable
 Small World (HNSW) indices in the HARALD project.
 
-## Contents
+## Table of Contents
 
-1. [Introduction to HNSW](#introduction)
-2. [Configuration Parameters](#configuration-parameters)
-3. [Performance Considerations](#performance-considerations)
-4. [Memory Usage](#memory-usage)
-5. [Index Persistence](#index-persistence)
-6. [Query Optimization](#query-optimization)
-7. [Common Pitfalls](#common-pitfalls)
-8. [References](#references)
+- [Quick Reference](#quick-reference)
+- [Introduction](#introduction)
+- [Configuration Parameters](#configuration-parameters)
+- [Performance Considerations](#performance-considerations)
+- [Memory Usage](#memory-usage)
+- [Index Persistence](#index-persistence)
+- [Query Optimization](#query-optimization)
+- [Common Pitfalls](#common-pitfalls)
+- [Implementation Lessons](#implementation-lessons)
+- [API Reference](#api-reference)
+- [References](#references)
+
+## Quick Reference
+
+| Task               | Method                    | Example                                           |
+| ------------------ | ------------------------- | ------------------------------------------------- |
+| Create index       | `Hnsw::new()`             | `Hnsw::new(384, 100_000, 16, 200, DistCosine {})` |
+| Insert data        | `index.insert()`          | `index.insert((vector.as_slice(), id))`           |
+| Batch insert       | `index.parallel_insert()` | `index.parallel_insert(&data_points)`             |
+| Search             | `index.search()`          | `index.search(&query, 5, 50)`                     |
+| Batch search       | `index.parallel_search()` | `index.parallel_search(&queries, 5, 50)`          |
+| Set search quality | `index.set_ef()`          | `index.set_ef(50)`                                |
+| Save index         | `index.file_dump()`       | `index.file_dump(&path_dir, "index_basename")?`   |
+| Load index         | `HnswIo::load_hnsw()`     | `HnswIo::new(&path_dir, "basename").load_hnsw()?` |
+
+### Key Parameters
+
+- **Dimensions**: Match your embedding size (e.g., 384 for OpenAI Ada2)
+- **Max Elements**: ~1.5x your expected dataset size
+- **M**: 12-16 (general), 5-8 (memory-constrained), 20-30 (speed-critical)
+- **EF Construction**: 100 (faster build), 200 (balanced), 400+ (highest
+  quality)
+- **EF Search**: 20-50 (interactive), 100+ (accuracy-critical), 400+
+  (exhaustive)
+
+### Common Issues
+
+- **Persistence**: Use `file_dump()` and `HnswIo::load_hnsw()`, not
+  `save_hnsw()`
+- **Lifetimes**: Handle index lifetimes carefully when loading
+- **Type Safety**: Be explicit with generic type parameters
+- **Memory**: Monitor usage with `dimension × 4 + M × 12` bytes per vector
 
 ## Introduction
 
@@ -92,7 +126,6 @@ let index = hnsw_rs::Hnsw::<f32, DistCosine>::new(
 - **M**: This is the maximum number of connections each point can have to other
   points. Higher values create more shortcuts, making searches faster but using
   more memory:
-
   - 12-16 for general use (good balance)
   - 5-8 for memory-constrained systems
   - 20-30 for speed-critical applications with available memory
@@ -100,7 +133,6 @@ let index = hnsw_rs::Hnsw::<f32, DistCosine>::new(
 - **EF Construction**: This controls how thoroughly the algorithm explores the
   space when building the index. Higher values create better quality indices but
   take longer to build:
-
   - 100: Faster building, slightly lower quality
   - 200: Good balance for most applications
   - 400+: Very high quality, but much slower to build
@@ -206,18 +238,18 @@ For HARALD's user experience, separate time-sensitive and background operations:
 ```rust
 // Quick search for interactive use
 fn quick_search(
-    query: &str, 
+    query: &str,
     index: &Hnsw<f32, DistCosine>
 ) -> Vec<SearchResult> {
     // Lower dimension or faster model
-    let embedding = embed_text_quickly(query); 
+    let embedding = embed_text_quickly(query);
     index.set_ef(20); // Lower quality, faster search
     index.search(&embedding, 3, 20)
 }
 
 // Deep search for background analysis
 fn deep_search(
-    query: &str, 
+    query: &str,
     index: &Hnsw<f32, DistCosine>
 ) -> Vec<SearchResult> {
     let embedding = embed_text_high_quality(query);
@@ -319,10 +351,12 @@ If Bryan starts reaching memory limits as his knowledge base grows:
 
    ```rust
    // Save indices to disk
-   personal_index.save_hnsw("path/to/personal.idx")?;
+   personal_index.file_dump(Path::new("path/to"), "personal_idx")?;
 
    // Load only when needed using memory mapping
-   let mapped_index = load_memory_mapped_index("path/to/personal.idx")?;
+   // Note: Proper memory mapping requires additional configuration
+   let mut hnsw_loader = HnswIo::new(Path::new("path/to"), "personal_idx");
+   let mapped_index = hnsw_loader.load_hnsw()?;
    ```
 
 1. **Quantization**: For extreme memory constraints, consider quantizing the
@@ -341,14 +375,18 @@ from scratch (which would be time-consuming).
 
 ### Basic Saving and Loading
 
-The `hnsw_rs` library makes it easy to persist indices:
+The `hnsw_rs` library offers methods to persist indices:
 
 ```rust
-// Save index to disk
-index.save_hnsw("path/to/index")?;
+// Save index to disk using file_dump
+// This creates two files:
+// - path/to/basename.hnsw.data
+// - path/to/basename.hnsw.graph
+index.file_dump(Path::new("path/to"), "basename")?;
 
-// Load index from disk later
-let loaded_index = Hnsw::<f32, DistCosine>::load_hnsw("path/to/index")?;
+// Load index from disk using HnswIo
+let mut hnsw_loader = HnswIo::new(Path::new("path/to"), "basename");
+let loaded_index = hnsw_loader.load_hnsw()?;
 ```
 
 ### Comprehensive Persistence Strategy for HARALD
@@ -360,8 +398,9 @@ For Bryan's knowledge management system, a more robust approach is needed:
 let timestamp = chrono::Utc::now().format("%Y%m%d_%H%M%S").to_string();
 
 // 2. Save the index with version info
-let index_path = format!("{}/data/hnsw_index_{}", root_dir, timestamp);
-index.save_hnsw(&index_path)?;
+let data_dir = Path::new(root_dir).join("data");
+let basename = format!("hnsw_index_{}", timestamp);
+index.file_dump(&data_dir, &basename)?;
 
 // 3. Save metadata separately (with the same version tag)
 let metadata_path = format!("{}/data/hnsw_meta_{}.json", root_dir, timestamp);
@@ -431,9 +470,13 @@ fs::write(&pointer_path, format!("{}\n{}", index_path, metadata_path))?;
        log::warn!("Failed to load latest index, trying previous version");
        let previous_version = find_previous_index_version(root_dir)?;
 
-       let index = Hnsw::<f32, DistCosine>::load_hnsw(
-           &previous_version.index_path
-       )?;
+       // Load using proper HnswIo interface
+       let dir_path = Path::new(&previous_version.dir_path);
+       let basename = &previous_version.basename;
+
+       let mut hnsw_loader = HnswIo::new(dir_path, basename);
+       let index = hnsw_loader.load_hnsw()?;
+
        let metadata = load_metadata(&previous_version.metadata_path)?;
 
        // Rebuild latest from previous
@@ -484,7 +527,6 @@ for neighbor in search_results {
 - **Number of Results**: The second parameter in the `search()` function (5 in
   the example) determines how many "nearest neighbors" to return. For HARALD's
   use cases:
-
   - **3-5 results**: Good for quick contextual lookups
   - **10-20 results**: Better for comprehensive research when Bryan needs depth
   - **50+ results**: Only when exhaustive coverage is needed
@@ -669,6 +711,403 @@ let config = if is_deep_research_mode() {
 };
 ```
 
+## Implementation Lessons
+
+When implementing HNSW in HARALD's codebase, we encountered several challenges
+that required careful attention. This section documents these experiences to
+help avoid similar issues in the future.
+
+### Persistence API Changes
+
+**Challenge**: The API documentation examples suggested using `save_hnsw()` and
+`load_hnsw()` methods, but these weren't correctly implemented in our version of
+the library.
+
+**Solution**: We discovered that the correct method for persisting indices is
+`file_dump()`, which takes a directory path and basename:
+
+```rust
+// The correct way to save an HNSW index:
+// Takes a directory path and a basename
+index.file_dump(output_dir, "index")?;
+// This creates two files: index.hnsw.data and index.hnsw.graph
+```
+
+**Lesson**: Always check the source code or extensive API documentation when
+methods aren't working as expected. The method signatures matter:
+
+```rust
+// Incorrect (doesn't exist):
+index.save_hnsw("path/to/index")?;
+
+// Correct:
+index.file_dump(&path_dir, "index_basename")?;
+```
+
+### Lifetime Management
+
+**Challenge**: Loading indices created lifetime issues where the index was tied
+to the loader object, causing compile errors when trying to return the loaded
+index.
+
+**Solution**: Proper construction and lifetime management is required:
+
+```rust
+// Create the loader and obtain the loaded index
+let mut hnsw_loader = HnswIo::new(&data_dir, "index");
+let loaded_index: Hnsw<'_, f32, DistCosine> = hnsw_loader.load_hnsw()?;
+
+// Convert to 'static lifetime for storage (requires unsafe)
+let index: Hnsw<'static, f32, DistCosine> =
+    unsafe { std::mem::transmute(loaded_index) };
+```
+
+**Lesson**: The HNSW index loading process creates references tied to the
+loader. When returning the index from functions, you need to carefully manage
+these lifetimes or extend them with appropriate mechanisms.
+
+### Type System Complexity
+
+**Challenge**: The `hnsw_rs` library has a complex type system with generic
+parameters and trait bounds that can be confusing, especially with newer
+versions making breaking changes.
+
+**Solution**: Be explicit about type parameters and check compiler errors
+carefully:
+
+```rust
+// Be explicit about types when working with the library
+let mut hnsw_loader = HnswIo::new(&data_dir, "index");
+let loaded_index: Hnsw<'_, f32, DistCosine> = hnsw_loader.load_hnsw()?;
+```
+
+### Struct Field Changes
+
+**Challenge**: The `Neighbour` struct fields changed between library versions,
+with a new `p_id` field required of type `PointId`.
+
+**Solution**: Update code to use the correct struct definition:
+
+```rust
+// Before: This no longer compiles
+let neighbor = Neighbour {
+    d_id: 0,
+    distance: 0.1,
+};
+
+// After: Correct with new field
+let neighbor = Neighbour {
+    d_id: 0,
+    p_id: PointId(0, 0), // Takes layer (u8) and index (i32)
+    distance: 0.1,
+};
+```
+
+**Lesson**: When upgrading dependencies, carefully check struct definitions for
+breaking changes. The `PointId` type requires both a layer and an index
+parameter.
+
+### Testing Challenges
+
+**Challenge**: Mock testing with HNSW indices can be complex due to the internal
+structures and lifetimes.
+
+**Solution**: Use more integration-style tests or isolate the HNSW interactions
+behind interfaces that can be mocked separately.
+
+### Performance Insights
+
+**Challenge**: Initial implementation showed slower than expected query times.
+
+**Solution**: Implemented batched operations and adjusted the EF parameters as
+suggested in the documentation:
+
+```rust
+// Setting appropriate EF values for our use case
+index.set_ef(50);  // Found this to be a good balance for our queries
+```
+
+## API Reference
+
+This section provides a detailed reference of key `hnsw_rs` methods, their
+parameters, return types, and usage examples based on our implementation.
+
+### Core Methods
+
+#### Creating an Index
+
+```rust
+pub fn new(
+    nb_dimensions: usize,    // Vector dimension (must match embedding size)
+    max_elements: usize,     // Maximum number of elements the index can hold
+    max_nb_connection: usize, // Maximum connections per node (M parameter)
+    ef_construction: usize,  // Controls index quality during construction
+    dist_f: D,               // Distance function (DistCosine, DistL2, etc.)
+) -> Hnsw<'static, T, D>
+```
+
+**Example:**
+
+```rust
+// Creating a 384-dimensional index with cosine distance
+let index = Hnsw::<f32, DistCosine>::new(
+    384,        // Dimensions - match your embeddings
+    100_000,    // Max elements - 1.5x your expected data size
+    16,         // M parameter - connections per node
+    200,        // EF construction - build quality
+    DistCosine {}
+);
+```
+
+#### Inserting Data
+
+```rust
+pub fn insert(&self, point: (impl AsRef<[T]>, usize)) -> PointId
+```
+
+**Parameters:**
+
+- `point`: A tuple containing:
+  - Vector data as slice (`&[T]`)
+  - Data identifier (`usize`)
+
+**Returns:** `PointId` - Physical identifier in the index
+
+**Example:**
+
+```rust
+// Single insertion
+let vector = generate_embedding("document content");
+let doc_id = 42;
+index.insert((vector.as_slice(), doc_id));
+```
+
+#### Batch Insertion
+
+```rust
+pub fn parallel_insert(&self, points: &[(impl AsRef<[T]> + Sync, usize)])
+```
+
+**Parameters:**
+
+- `points`: Slice of tuples, each containing a vector and its ID
+
+**Example:**
+
+```rust
+// Batch insertion for better performance
+let data_points: Vec<(&[f32], usize)> = documents
+    .iter()
+    .enumerate()
+    .map(|(id, doc)| {
+        let embedding = generate_embedding(doc);
+        (embedding.as_slice(), id)
+    })
+    .collect();
+
+index.parallel_insert(&data_points);
+```
+
+#### Searching
+
+```rust
+pub fn search(
+    &self,
+    query: impl AsRef<[T]>, // Query vector
+    k_nearest: usize,       // Number of results to return
+    ef_search: usize        // Search quality parameter
+) -> Vec<Neighbour>
+```
+
+**Parameters:**
+
+- `query`: Query vector as slice
+- `k_nearest`: Number of nearest neighbors to return
+- `ef_search`: Controls search quality/speed tradeoff
+
+**Returns:** Vector of `Neighbour` structures
+
+**Example:**
+
+```rust
+// Search for 5 nearest neighbors with medium quality
+let query_vec = generate_embedding("search query");
+let neighbors = index.search(&query_vec, 5, 50);
+
+for n in neighbors {
+    println!("Doc ID: {}, Distance: {}", n.d_id, n.distance);
+}
+```
+
+#### Batch Searching
+
+```rust
+pub fn parallel_search(
+    &self,
+    queries: &[impl AsRef<[T]> + Sync],
+    k_nearest: usize,
+    ef_search: usize
+) -> Vec<Vec<Neighbour>>
+```
+
+**Parameters:**
+
+- `queries`: Slice of query vectors
+- `k_nearest`: Number of nearest neighbors to return per query
+- `ef_search`: Controls search quality/speed tradeoff
+
+**Returns:** Vector of vectors of `Neighbour` structures
+
+**Example:**
+
+```rust
+// Search multiple queries in parallel
+let query_vecs = vec![
+    generate_embedding("first query"),
+    generate_embedding("second query"),
+    generate_embedding("third query"),
+];
+
+let batch_results = index.parallel_search(&query_vecs, 5, 50);
+```
+
+#### Setting Search Parameters
+
+```rust
+pub fn set_ef(&self, ef: usize) -> bool
+```
+
+**Parameters:**
+
+- `ef`: New EF value for search
+
+**Returns:** Boolean indicating success
+
+**Example:**
+
+```rust
+// Adjust search quality dynamically based on use case
+if needs_high_accuracy {
+    index.set_ef(200);  // More thorough search
+} else {
+    index.set_ef(20);   // Faster search
+}
+```
+
+### Persistence Methods
+
+#### Saving an Index
+
+```rust
+pub fn file_dump(
+    &self,
+    path: &std::path::Path,  // Directory path
+    basename: &str           // Base filename
+) -> Result<String>
+```
+
+**Parameters:**
+
+- `path`: Path to directory where files will be saved
+- `basename`: Base filename for the index files
+
+**Returns:** Result with path string or error
+
+**Example:**
+
+```rust
+// Save index to disk
+let data_dir = Path::new("/path/to/data");
+let result = index.file_dump(&data_dir, "knowledge_index")?;
+
+// Creates two files:
+// - /path/to/data/knowledge_index.hnsw.data
+// - /path/to/data/knowledge_index.hnsw.graph
+```
+
+#### Loading an Index
+
+```rust
+// HnswIo constructor
+pub fn new(dir_path: &Path, basename: &str) -> HnswIo
+
+// Loading method
+pub fn load_hnsw<'b, T, D>(&mut self) -> Result<Hnsw<'b, T, D>>
+where
+    T: 'static + Serialize + DeserializeOwned + Clone + Send + Sync + Debug,
+    D: Distance<T> + Default + Send + Sync
+```
+
+**Parameters:**
+
+- For constructor:
+  - `dir_path`: Directory containing the index files
+  - `basename`: Base filename of the index
+- For `load_hnsw()`: No parameters, uses state from constructor
+
+**Returns:** Result with HNSW index or error
+
+**Example:**
+
+```rust
+// Load index from disk
+let data_dir = Path::new("/path/to/data");
+let mut hnsw_loader = HnswIo::new(&data_dir, "knowledge_index");
+let index = hnsw_loader.load_hnsw()?;
+
+// Handle lifetime issues if returning from function:
+let index: Hnsw<'static, f32, DistCosine> =
+    unsafe { std::mem::transmute(loaded_index) };
+```
+
+### Helper Methods
+
+#### Getting Index Info
+
+```rust
+pub fn get_nb_point(&self) -> usize  // Get number of points in index
+pub fn get_dimensions(&self) -> usize // Get vector dimensions
+```
+
+**Example:**
+
+```rust
+// Check index stats
+let point_count = index.get_nb_point();
+let dimensions = index.get_dimensions();
+println!("Index contains {} points of {} dimensions", point_count, dimensions);
+```
+
+### Structures
+
+#### Neighbour
+
+Represents a search result:
+
+```rust
+pub struct Neighbour {
+    pub d_id: usize,             // Data ID (corresponds to your insertion ID)
+    pub p_id: PointId,           // Physical ID (internal identifier)
+    pub distance: f32,           // Distance from query
+}
+
+pub struct PointId(pub u8, pub i32);  // Layer and index
+```
+
+**Example:**
+
+```rust
+// Processing search results
+for neighbor in search_results {
+    println!(
+        "Data ID: {}, Distance: {}, Internal ID: {:?}",
+        neighbor.d_id,
+        neighbor.distance,
+        neighbor.p_id
+    );
+}
+```
+
 ## References
 
 - [hnsw_rs Documentation](https://docs.rs/hnsw_rs/0.3.2/hnsw_rs/)
@@ -706,7 +1145,6 @@ index itself, search results, and distance calculations.
   retrieval.
 
   The type parameters are:
-
   - `T`: The data type of vector elements (usually `f32` for 32-bit floats)
   - `D`: The distance metric to use (like `DistCosine` or `DistL2`)
 
@@ -716,8 +1154,8 @@ index itself, search results, and distance calculations.
   - `insert_parallel()` - Adds multiple memories simultaneously for efficiency
   - `search()` - Finds memories similar to a query
   - `parallel_search()` - Finds multiple similar memories at once
-  - `save_hnsw()` - Saves Bryan's memory to disk for persistence
-  - `load_hnsw()` - Loads previously saved memories
+  - `file_dump()` - Saves Bryan's memory to disk for persistence
+  - Using `HnswIo::load_hnsw()` - Loads previously saved memories
 
 - **`Neighbour`**: A struct representing a single search result - one piece of
   relevant information found during a query. Contains:

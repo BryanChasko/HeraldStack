@@ -19,19 +19,19 @@ use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
 /// Default embedding model name.
-/// 
+///
 /// This model should be available in the local Ollama instance.
 /// Harald-Phi4 is optimized for code and documentation understanding.
 const DEFAULT_MODEL: &str = "harald-phi4";
 
 /// Default embedding API endpoint.
-/// 
+///
 /// Points to a local Ollama instance running on the standard port.
 /// This avoids external API dependencies and ensures data privacy.
 const DEFAULT_ENDPOINT: &str = "http://127.0.0.1:11434/api/embeddings";
 
 /// Default timeout for embedding requests in seconds.
-/// 
+///
 /// Balances between allowing sufficient time for processing
 /// and preventing indefinite hangs on network issues.
 const DEFAULT_TIMEOUT_SECS: u64 = 30;
@@ -103,9 +103,10 @@ struct EmbedResponse {
 /// - Network connectivity issues occur
 ///
 /// # Examples
-/// ```rust
+/// ```rust,no_run
 /// use reqwest::Client;
-/// 
+/// use rust_ingest::embed;
+///
 /// #[tokio::main]
 /// async fn main() -> anyhow::Result<()> {
 ///     let client = Client::new();
@@ -132,15 +133,15 @@ pub async fn embed(text: &str, max_tokens: usize, client: &Client) -> Result<Vec
 /// # Errors
 /// Returns an error if any step of the embedding process fails.
 pub async fn embed_with_config(
-    text: &str, 
+    text: &str,
     _max_tokens: usize, // Currently unused but kept for API compatibility
-    client: &Client, 
-    config: EmbedConfig
+    client: &Client,
+    config: EmbedConfig,
 ) -> Result<Vec<f32>> {
     validate_input(text)?;
-    
+
     let mut last_error = None;
-    
+
     for attempt in 1..=config.max_retries {
         match attempt_embedding(text, client, &config).await {
             Ok(embedding) => {
@@ -157,7 +158,7 @@ pub async fn embed_with_config(
             }
         }
     }
-    
+
     Err(last_error.unwrap_or_else(|| anyhow::anyhow!("All embedding attempts failed")))
 }
 
@@ -166,11 +167,14 @@ fn validate_input(text: &str) -> Result<()> {
     if text.trim().is_empty() {
         return Err(anyhow::anyhow!("Input text cannot be empty"));
     }
-    
+
     if text.len() > 100_000 {
-        return Err(anyhow::anyhow!("Input text too long: {} characters", text.len()));
+        return Err(anyhow::anyhow!(
+            "Input text too long: {} characters",
+            text.len()
+        ));
     }
-    
+
     Ok(())
 }
 
@@ -181,7 +185,7 @@ async fn attempt_embedding(text: &str, client: &Client, config: &EmbedConfig) ->
         prompt: text,
         stream: false,
     };
-    
+
     let response: EmbedResponse = client
         .post(&config.endpoint)
         .json(&request_body)
@@ -194,7 +198,7 @@ async fn attempt_embedding(text: &str, client: &Client, config: &EmbedConfig) ->
         .json()
         .await
         .context("Failed to parse embedding response")?;
-    
+
     Ok(response.embedding)
 }
 
@@ -203,16 +207,21 @@ fn validate_embedding(embedding: &[f32]) -> Result<()> {
     if embedding.is_empty() {
         return Err(anyhow::anyhow!("Received empty embedding vector"));
     }
-    
+
     if embedding.len() < 100 {
-        return Err(anyhow::anyhow!("Embedding dimension too small: {}", embedding.len()));
+        return Err(anyhow::anyhow!(
+            "Embedding dimension too small: {}",
+            embedding.len()
+        ));
     }
-    
+
     // Check for NaN or infinite values
     if embedding.iter().any(|&x| !x.is_finite()) {
-        return Err(anyhow::anyhow!("Embedding contains invalid values (NaN or infinite)"));
+        return Err(anyhow::anyhow!(
+            "Embedding contains invalid values (NaN or infinite)"
+        ));
     }
-    
+
     Ok(())
 }
 
@@ -257,11 +266,11 @@ mod tests {
     fn test_validate_input() {
         // Valid input
         assert!(validate_input("Hello world").is_ok());
-        
+
         // Empty input
         assert!(validate_input("").is_err());
         assert!(validate_input("   ").is_err());
-        
+
         // Too long input
         let long_text = "a".repeat(100_001);
         assert!(validate_input(&long_text).is_err());
@@ -272,18 +281,18 @@ mod tests {
         // Valid embedding
         let valid_embedding = vec![0.1; 384];
         assert!(validate_embedding(&valid_embedding).is_ok());
-        
+
         // Empty embedding
         assert!(validate_embedding(&[]).is_err());
-        
+
         // Too small embedding
         let small_embedding = vec![0.1; 50];
         assert!(validate_embedding(&small_embedding).is_err());
-        
+
         // Invalid values
         let invalid_embedding = vec![f32::NAN; 384];
         assert!(validate_embedding(&invalid_embedding).is_err());
-        
+
         let infinite_embedding = vec![f32::INFINITY; 384];
         assert!(validate_embedding(&infinite_embedding).is_err());
     }
@@ -295,7 +304,7 @@ mod tests {
             prompt: "test text",
             stream: false,
         };
-        
+
         let serialized = serde_json::to_string(&request).unwrap();
         assert!(serialized.contains("test-model"));
         assert!(serialized.contains("test text"));
@@ -314,12 +323,12 @@ mod tests {
     mod integration {
         use super::*;
         use reqwest::Client;
-        
+
         #[tokio::test]
         async fn test_embed_integration() {
             let client = Client::new();
             let result = embed("test text", 100, &client).await;
-            
+
             // This test would only pass with a running Ollama instance
             // In CI/CD, this would be skipped or use a mock server
             match result {
