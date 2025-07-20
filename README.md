@@ -63,6 +63,12 @@ pragmatic execution, and narrative continuity.
 HeraldStack operates on consent-based principles and follows clear ethical
 guidelines including those defined in LawsOfRobotics.json.
 
+## Development Tools
+
+- **Code Quality & Validation**: Scripts for checking and formatting code are
+  available in `scripts/validation/`. See
+  `scripts/validation/VALIDATION_TOOLS.md` for usage details.
+  
 ## Further Information
 
 See docs/DETAILED.md for more information.
@@ -70,4 +76,5 @@ See docs/DETAILED.md for more information.
 ---
 
 © 2025 Bryan Chasko
+
 # Git hook test

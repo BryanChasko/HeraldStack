@@ -2,7 +2,7 @@
 set -e
 
 # Change to the rust_ingest directory where Cargo.toml is located
-cd "$(dirname "$0")/rust_ingest" || exit 1
+cd "$(dirname "$0")/../../rust_ingest" || exit 1
 echo "Checking Rust files in $(pwd)..."
 
 echo "Running rustfmt..."
