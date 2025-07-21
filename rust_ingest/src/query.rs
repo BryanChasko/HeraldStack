@@ -159,9 +159,11 @@ fn load_index_and_metadata(
 ) -> Result<(Hnsw<'static, f32, DistCosine>, Vec<PathBuf>)> {
     let data_dir = config.root_dir.join("data");
 
-    // Load the HNSW index using the modern file_load method
+    // Load the HNSW index using HnswIo loader
     let index_path = data_dir.join("index");
-    let loaded_index: Hnsw<'_, f32, DistCosine> = HnswIo::file_load(&index_path)
+    let mut hnsw_loader = HnswIo::new(&index_path, "");
+    let loaded_index: Hnsw<'_, f32, DistCosine> = hnsw_loader
+        .load_hnsw()
         .context("Failed to load HNSW index - ensure ingestion has been run")?;
 
     // Convert the loaded index to an owned index with 'static lifetime
@@ -382,8 +384,7 @@ mod tests {
         // 2. Configure it to respond to our API call
         // 3. Send a request and verify the response
 
-        // For now, just make the test pass
-        assert!(true);
+        // Empty test - no assertions needed for a placeholder
     }
 
     #[test]
@@ -457,8 +458,7 @@ mod tests {
             // Mock testing of async functions will be set up in a separate PR
             // to properly handle the tokio runtime issue
 
-            // For now, just make the test pass
-            assert!(true);
+            // Empty test - will be implemented in future PR
 
             Ok(())
         }
@@ -542,8 +542,7 @@ mod tests {
             // Mock testing of async functions will be set up in a separate PR
             // to properly handle the tokio runtime issue
 
-            // For now, just make the test pass
-            assert!(true);
+            // Empty test - will be implemented in future PR
 
             Ok(())
         }
