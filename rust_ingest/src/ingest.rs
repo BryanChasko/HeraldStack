@@ -65,6 +65,9 @@ pub struct IngestConfig {
     pub max_chars: usize,
     /// Maximum tokens for embedding requests.
     pub max_tokens: usize,
+    /// Maximum number of files to process concurrently.
+    /// If None, defaults to the number of CPU cores.
+    pub max_concurrent_files: Option<usize>,
 }
 
 impl Default for IngestConfig {
@@ -73,6 +76,7 @@ impl Default for IngestConfig {
             root_dir: std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")),
             max_chars: MAX_FILE_CHARS,
             max_tokens: MAX_EMBEDDING_TOKENS,
+            max_concurrent_files: None, // Use CPU core count by default
         }
     }
 }
@@ -168,7 +172,7 @@ fn create_hnsw_index() -> Hnsw<'static, f32, DistCosine> {
     )
 }
 
-/// Processes all files in the directory tree.
+/// Processes all files in the directory tree with parallel execution.
 async fn process_directory_tree(
     config: &IngestConfig,
     client: &reqwest::Client,
@@ -176,6 +180,36 @@ async fn process_directory_tree(
     file_metadata: &mut Vec<PathBuf>,
     stats: &mut IngestStats,
 ) -> Result<()> {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    use std::sync::{Arc, Mutex};
+    use tokio::sync::Semaphore;
+    use tokio::task::JoinSet;
+
+    // Create a semaphore to limit concurrent operations
+    let max_concurrent = config.max_concurrent_files.unwrap_or_else(|| {
+        // Default to number of CPUs if not specified
+        std::thread::available_parallelism()
+            .map(|n| n.get())
+            .unwrap_or(4)
+    });
+
+    // Use a semaphore to limit concurrent embedding operations
+    let semaphore = Arc::new(Semaphore::new(max_concurrent));
+
+    // Use JoinSet to manage async tasks
+    let mut tasks = JoinSet::new();
+
+    // Use atomics for thread-safe counters
+    let processed_count = Arc::new(AtomicUsize::new(0));
+    let skipped_count = Arc::new(AtomicUsize::new(0));
+
+    // Use a mutex to protect the file metadata vector
+    let file_paths = Arc::new(Mutex::new(Vec::new()));
+
+    // Collect candidate files first
+    let mut candidate_files = Vec::new();
+
+    // First pass: find all valid files to process
     for entry in WalkDir::new(&config.root_dir)
         .into_iter()
         .filter_map(|e| e.ok())
@@ -192,29 +226,82 @@ async fn process_directory_tree(
             continue;
         }
 
-        match process_single_file(
-            path,
-            config,
-            client,
-            index,
-            file_metadata,
-            stats.files_processed,
-        )
-        .await
-        {
-            Ok(()) => {
-                stats.files_processed += 1;
-                if stats.files_processed % PROGRESS_INTERVAL == 0 {
-                    println!("Processed {} files…", stats.files_processed);
-                }
-            }
-            Err(e) => {
-                eprintln!("Warning: Failed to process file {}: {}", path.display(), e);
-                stats.files_skipped += 1;
-            }
-        }
+        // Add to candidates
+        candidate_files.push(path.to_path_buf());
     }
 
+    println!("Found {} files to process", candidate_files.len());
+
+    // Second pass: process files concurrently
+    for (file_id, path) in candidate_files.into_iter().enumerate() {
+        // Clone references for the async task
+        let semaphore_clone = semaphore.clone();
+        let client_clone = client.clone();
+        let config_clone = config.clone();
+        let processed_count_clone = processed_count.clone();
+        let skipped_count_clone = skipped_count.clone();
+        let file_paths_clone = file_paths.clone();
+        let path_clone = path.clone();
+
+        // Spawn a task for each file
+        tasks.spawn(async move {
+            // Acquire a permit from the semaphore
+            let _permit = semaphore_clone.acquire().await.unwrap();
+
+            // Process the file
+            match process_single_file_for_embedding(&path_clone, &config_clone, &client_clone).await
+            {
+                Ok(embedding) => {
+                    // Successfully processed
+                    let count = processed_count_clone.fetch_add(1, Ordering::SeqCst) + 1;
+
+                    // Store result
+                    let mut metadata = file_paths_clone.lock().unwrap();
+                    metadata.push((file_id, path_clone, embedding));
+
+                    // Show progress periodically
+                    if count % PROGRESS_INTERVAL == 0 {
+                        println!("Processed {} files…", count);
+                    }
+
+                    Ok(())
+                }
+                Err(e) => {
+                    // Log error and count as skipped
+                    eprintln!(
+                        "Warning: Failed to process file {}: {}",
+                        path_clone.display(),
+                        e
+                    );
+                    skipped_count_clone.fetch_add(1, Ordering::SeqCst);
+                    Err(e)
+                }
+            }
+        });
+    }
+
+    // Wait for all tasks to complete
+    while let Some(result) = tasks.join_next().await {
+        // Just check for panics, errors are already handled in the task
+        result?;
+    }
+
+    // Update stats from atomic counters
+    stats.files_processed += processed_count.load(Ordering::SeqCst);
+    stats.files_skipped += skipped_count.load(Ordering::SeqCst);
+
+    // Sort results by file_id and insert into the index
+    let mut results = file_paths.lock().unwrap();
+    results.sort_by_key(|(id, _, _)| *id);
+
+    // Now populate the index and metadata
+    for (_, path, embedding) in results.iter() {
+        let file_id = file_metadata.len();
+        index.insert((embedding.as_slice(), file_id));
+        file_metadata.push(path.clone());
+    }
+
+    println!("Successfully indexed {} files", file_metadata.len());
     Ok(())
 }
 
@@ -232,6 +319,40 @@ fn is_supported_file(path: &std::path::Path) -> bool {
         .is_some_and(|ext| SUPPORTED_EXTENSIONS.contains(&ext))
 }
 
+/// Processes a single file for embedding without modifying the index.
+///
+/// This function handles just the embedding part, making it suitable for
+/// parallel processing in our async pipeline.
+///
+/// # Arguments
+/// * `path` - Path to the file being processed
+/// * `config` - Configuration settings for ingestion
+/// * `client` - HTTP client for embedding API requests
+///
+/// # Returns
+/// The embedding vector on success
+///
+/// # Errors
+/// Returns error if file reading or embedding generation fails.
+async fn process_single_file_for_embedding(
+    path: &std::path::Path,
+    config: &IngestConfig,
+    client: &reqwest::Client,
+) -> Result<Vec<f32>> {
+    // Read and truncate file content
+    let content = std::fs::read_to_string(path)
+        .with_context(|| format!("Failed to read file: {}", path.display()))?;
+
+    let truncated_content = truncate_content(&content, config.max_chars);
+
+    // Generate embedding vector
+    let embedding = embed::embed(truncated_content, config.max_tokens, client)
+        .await
+        .with_context(|| format!("Failed to generate embedding for file: {}", path.display()))?;
+
+    Ok(embedding)
+}
+
 /// Processes a single file and adds it to the index.
 ///
 /// # Arguments
@@ -247,6 +368,8 @@ fn is_supported_file(path: &std::path::Path) -> bool {
 ///
 /// # Errors
 /// Returns error if file reading or embedding generation fails.
+///
+/// @deprecated Use the parallel processing pipeline instead
 async fn process_single_file(
     path: &std::path::Path,
     config: &IngestConfig,
@@ -255,16 +378,8 @@ async fn process_single_file(
     file_metadata: &mut Vec<PathBuf>,
     file_id: usize,
 ) -> Result<()> {
-    // Read and truncate file content
-    let content = std::fs::read_to_string(path)
-        .with_context(|| format!("Failed to read file: {}", path.display()))?;
-
-    let truncated_content = truncate_content(&content, config.max_chars);
-
-    // Generate embedding vector
-    let embedding = embed::embed(truncated_content, config.max_tokens, client)
-        .await
-        .with_context(|| format!("Failed to generate embedding for file: {}", path.display()))?;
+    // Generate embedding
+    let embedding = process_single_file_for_embedding(path, config, client).await?;
 
     // Insert into index
     index.insert((embedding.as_slice(), file_id));

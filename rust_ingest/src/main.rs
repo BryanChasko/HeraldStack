@@ -48,6 +48,11 @@ enum Commands {
         /// Maximum tokens for embedding requests
         #[arg(long, default_value = "600")]
         max_tokens: usize,
+
+        /// Maximum number of files to process concurrently
+        /// If not specified, defaults to number of CPU cores
+        #[arg(long)]
+        max_concurrent: Option<usize>,
     },
 
     /// Ask a question using the pre-built index.
@@ -88,6 +93,7 @@ async fn main() -> Result<()> {
             root,
             max_chars,
             max_tokens,
+            max_concurrent,
         } => {
             // Create ingest configuration
             let mut config = rust_ingest::ingest::IngestConfig::default();
@@ -97,6 +103,7 @@ async fn main() -> Result<()> {
             }
             config.max_chars = max_chars;
             config.max_tokens = max_tokens;
+            config.max_concurrent_files = max_concurrent;
 
             // Run ingestion process
             let stats = ingest::run_with_config(config).await?;

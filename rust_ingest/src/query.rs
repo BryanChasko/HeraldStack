@@ -159,21 +159,24 @@ fn load_index_and_metadata(
 ) -> Result<(Hnsw<'static, f32, DistCosine>, Vec<PathBuf>)> {
     let data_dir = config.root_dir.join("data");
 
-    // Load the HNSW index using the correct API with HnswIo
-    let mut hnsw_loader = HnswIo::new(&data_dir, "index");
-    let loaded_index: Hnsw<'_, f32, DistCosine> = hnsw_loader
-        .load_hnsw()
+    // Load the HNSW index using the modern file_load method
+    let index_path = data_dir.join("index");
+    let loaded_index: Hnsw<'_, f32, DistCosine> = HnswIo::file_load(&index_path)
         .context("Failed to load HNSW index - ensure ingestion has been run")?;
 
     // Convert the loaded index to an owned index with 'static lifetime
     // SAFETY: This transmute extends the lifetime of the index, which is safe
     // because we're taking ownership of the index and ensuring it outlives
     // its original borrow
-    let index: Hnsw<'static, f32, DistCosine> = unsafe { std::mem::transmute(loaded_index) }; // Load file metadata
-    let metadata_file =
-        fs::File::open(data_dir.join("meta.json")).context("Failed to open metadata file")?;
+    let index: Hnsw<'static, f32, DistCosine> = unsafe { std::mem::transmute(loaded_index) };
+
+    // Load file metadata
+    let metadata_path = data_dir.join("meta.json");
+    let metadata_content = fs::read_to_string(&metadata_path)
+        .with_context(|| format!("Failed to read metadata file: {}", metadata_path.display()))?;
+
     let metadata: Vec<PathBuf> =
-        serde_json::from_reader(metadata_file).context("Failed to parse metadata JSON")?;
+        serde_json::from_str(&metadata_content).context("Failed to parse metadata JSON")?;
 
     Ok((index, metadata))
 }
