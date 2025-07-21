@@ -1,0 +1,34 @@
+🔄 2025-07-21 14:06:37 | Embedding request attempt 1/3...
+📦 Request size:       40 bytes
+🔍 Request preview: {"model":"harald-phi4","prompt":"test"}...
+⏱️  Using timeout: 15s
+📡 2025-07-21 14:06:37 | Embedding response received
+📊 Status code: 000
+⏱️  API time: 15.003971s, Total time: 15.159799000s
+📦 Request size: 0 bytes, Response size: 0 bytes
+❌ No embedding vectors in response (attempt 1/3):
+⚠️  Request timed out after 15s
+🔄 Retrying in 5 seconds...
+🔄 2025-07-21 14:06:58 | Embedding request attempt 2/3...
+📦 Request size:       40 bytes
+🔍 Request preview: {"model":"harald-phi4","prompt":"test"}...
+⏱️  Using timeout: 25s
+📡 2025-07-21 14:06:58 | Embedding response received
+📊 Status code: 200
+⏱️  API time: 8.683511s, Total time: 8.878634000s
+📦 Request size: 0 bytes, Response size: 62198 bytes
+❌ No embedding vectors in response (attempt 2/3):
+
+🔄 Retrying in 5 seconds...
+🔄 2025-07-21 14:07:12 | Embedding request attempt 3/3...
+📦 Request size:       40 bytes
+🔍 Request preview: {"model":"harald-phi4","prompt":"test"}...
+⏱️  Using timeout: 35s
+📡 2025-07-21 14:07:12 | Embedding response received
+📊 Status code: 200
+⏱️  API time: 4.843384s, Total time: 4.994282000s
+📦 Request size: 0 bytes, Response size: 62198 bytes
+❌ No embedding vectors in response (attempt 3/3):
+
+❌ All retry attempts failed
+-----------------------------------------

@@ -7,12 +7,45 @@ HNSW index, (3) queries the index for RAG.
 
 This tool creates a semantic search index for your project documentation. It:
 
-1. **Reads** your Markdown and JSON files
+1. **Reads** your Markdown and JSON/JSONL files
 2. **Converts** text into numerical vector embeddings that capture meaning
 3. **Indexes** these vectors for efficient similarity search
 4. **Retrieves** relevant documents when you ask questions
 
 This enables natural language search across your codebase and documentation.
+
+### JSONL Support and Embedding Limits
+
+The system supports [JSON Lines (JSONL)](http://jsonlines.org/examples) format
+for more efficient embedding processing:
+
+- **What is JSONL?** A newline-delimited JSON format where each line is a valid
+  JSON object
+- **Why use it?** Better for streaming, chunking, and processing large datasets
+- **Performance benefit:** Reduces timeout issues with embedding APIs by
+  allowing record-by-record processing
+- **Conversion:** Use `jq -c '.[]' input.json > output.jsonl` to convert JSON
+  arrays to JSONL
+
+**Important:** Through testing, we've identified specific limits with the Ollama
+embedding API:
+
+- Maximum text length: ~300 characters (requests with 400+ characters timeout)
+- Recommended chunk size: Keep chunks under 250 characters for reliable
+  processing
+- Vector dimensions: harald-phi4 model produces 3072-dimensional embeddings
+
+Note: These limits may be related to system resources rather than API
+constraints. For processing larger chunks (500-600 chars), try running the
+standalone Ollama server:
+
+```bash
+# Close the Ollama GUI app first, then run:
+ollama serve
+```
+
+See our
+[detailed documentation on Ollama embedding limits](../docs/vector-search/ollama-embedding-limits.md).
 
 ## 🔎 Quick Overview
 
@@ -41,17 +74,29 @@ This enables natural language search across your codebase and documentation.
 
 ## 🏃‍♂️ How to Use / Running the Project
 
+We've created convenient scripts for ingestion and querying:
+
 ```bash
-# Step 1: Build the search index, whenever your documentation or
-# knowledge bases change
+# Step 1: Build the search index for relevant directories
+# This script will:
+# - Check if Ollama is running and test embedding generation
+# - Clean up previous indices if requested
+# - Ingest only relevant directories (ai-entities, personality-archetypes)
+./scripts/ingest.sh
+
+# Step 2: Query HARALD with your questions
+./scripts/query.sh "Harald, who are the other entities you know?"
+```
+
+For manual control, you can run the commands directly:
+
+```bash
+# For selective ingestion (recommended):
 cd rust_ingest
-cargo run --release -- ingest
+cargo run --release -- ingest --root /Users/bryanchasko/Code/HARALD/ai-entities
 
-# Step 2: Search your documentation
-cargo run --release -- query "Harald, who are the other entities you know?"
-
-# Step 2: Search your documentation
-\$ cargo run --release -- query "Harald, who are the other entities you know?"
+# For querying:
+cargo run --release -- query "Your question here?"
 ```
 
 ## Unit Testing Standards

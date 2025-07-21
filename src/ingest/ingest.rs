@@ -39,8 +39,8 @@ const SKIP_DIRS: &[&str] = &[
     "build",
     "dist",
     "docs/api",
-    "rust_ingest/target",
-    "rust_ingest/Cargo.lock",
+    "src/target",
+    "src/Cargo.lock",
 ];
 
 /// Maximum number of characters to read from each file for embedding.

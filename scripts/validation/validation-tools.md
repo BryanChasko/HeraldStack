@@ -10,6 +10,8 @@ HeraldStack project.
 - `check-rust.sh` - Runs formatting (rustfmt), linting (clippy), tests, and
   security audit on Rust code
 - `format-md.sh` - Formats Markdown files in the project using prettier
+- `validate_naming.sh` - Validates file and directory names against project
+  naming conventions
 
 ## Usage
 
@@ -24,6 +26,12 @@ Run these scripts from the project root for best results:
 
 # Format Markdown files
 ./scripts/validation/format-md.sh
+
+# Validate file and directory names
+./scripts/validation/validate_naming.sh
+
+# Fix naming issues interactively
+./scripts/validation/validate_naming.sh --fix --verbose
 ```
 
 These scripts are designed to be used both locally during development and in
