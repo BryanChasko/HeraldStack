@@ -1,30 +1,56 @@
-# HeraldStack Validation & Code Quality Tools
+# HARALD Validation & Code Quality Tools
 
-This directory contains scripts used for validating and formatting files in the
-HeraldStack project.
+This directory contains automated scripts for validating and formatting files in
+the HARALD project.
 
-## Available Scripts
+## 🔧 Automated Cleanup Tools - Use These First
 
-- `check-json.sh` - Validates and formats JSON files in the project using
-  jsonlint and prettier
-- `check-rust.sh` - Runs formatting (rustfmt), linting (clippy), tests, and
-  security audit on Rust code
-- `format-md.sh` - Formats Markdown files in the project using prettier
+**Before manually fixing any formatting or linting issues, ALWAYS run these
+automated tools:**
+
+### Available Scripts
+
+- **`check-json.sh`** - Validates and formats JSON files using jsonlint and
+  prettier. **Run this for any JSON formatting issues.**
+- **`check-rust.sh`** - Runs formatting (rustfmt), linting (clippy), tests, and
+  security audit on Rust code. **Run this for any Rust issues.**
+- **`format_md`** - (Rust tool) Formats Markdown files using prettier  
+  with consistent line length and spacing. **Run this for any Markdown
+  formatting issues.**
+- **`validate_naming`** - (Rust tool) Validates file and directory names against
+  project conventions. Use `--fix --verbose` for interactive fixes.
 
 ## Usage
 
-Run these scripts from the project root for best results:
+**Always run these scripts from the project root:**
 
 ```bash
-# Validate and format JSON files
+# Fix JSON formatting and validation issues
 ./scripts/validation/check-json.sh
 
-# Validate Rust code
+# Fix Rust formatting, linting, run tests
 ./scripts/validation/check-rust.sh
 
-# Format Markdown files
-./scripts/validation/format-md.sh
+# Fix Markdown formatting (line length, spacing, etc.)
+./src/target/release/format_md
+
+# Check and fix naming convention problems
+./src/target/release/validate_naming --fix --verbose
 ```
 
-These scripts are designed to be used both locally during development and in
-CI/CD pipelines.
+## When to Use Each Tool
+
+- **Got JSON linting errors?** → Run `check-json.sh`
+- **Got Rust clippy warnings or formatting issues?** → Run `check-rust.sh`
+- **Got Markdown line length or formatting issues?** → Run `format_md`
+- **Got file naming convention warnings?** → Run `validate_naming --fix`
+
+## Integration with Development
+
+These scripts are designed to be used:
+
+- **Locally during development** - Run before committing changes
+- **In CI/CD pipelines** - Automated quality checks
+- **When encountering linting errors** - Fix automatically instead of manually
+
+**Key principle: Let automation handle formatting, focus on logic and content.**

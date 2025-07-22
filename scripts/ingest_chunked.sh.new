@@ -1,0 +1,87 @@
+#!/bin/bash
+# ingest_chunked.sh - Wrapper around the Rust ingest_chunked implementation
+# Maintains compatibility with existing scripts during the migration period
+#
+# Usage: Same as the original ingest_chunked.sh
+# ./ingest_chunked.sh [--file <file>] [--model <model>]
+
+set -e  # Exit on error
+
+# Project paths
+PROJECT_ROOT="/Users/bryanchasko/Code/HARALD"
+RUST_DIR="$PROJECT_ROOT/src"
+BINARY_PATH="$RUST_DIR/target/debug/ingest_chunked"
+LEGACY_PATH="$PROJECT_ROOT/scripts/ingest_chunked.sh.legacy"
+
+# Check if the original ingest_chunked.sh exists and rename it if needed
+if [ -f "$PROJECT_ROOT/scripts/ingest_chunked.sh" ] && [ ! -f "$LEGACY_PATH" ]; then
+    echo "🔄 Backing up original script to ingest_chunked.sh.legacy"
+    mv "$PROJECT_ROOT/scripts/ingest_chunked.sh" "$LEGACY_PATH"
+fi
+
+# Build the Rust binary if it doesn't exist or if source has been modified
+build_if_needed() {
+    local need_build=false
+    
+    # Check if binary exists
+    if [ ! -f "$BINARY_PATH" ]; then
+        echo "🔨 Binary not found, building..."
+        need_build=true
+    else
+        # Check if any Rust source files are newer than the binary
+        if find "$RUST_DIR" -name "*.rs" -newer "$BINARY_PATH" | grep -q .; then
+            echo "🔨 Source files modified, rebuilding..."
+            need_build=true
+        fi
+    fi
+    
+    if [ "$need_build" = true ]; then
+        echo "🔄 Building Rust implementation..."
+        cd "$RUST_DIR"
+        cargo build --bin ingest_chunked --features cli
+        if [ $? -ne 0 ]; then
+            echo "❌ Failed to build Rust implementation"
+            if [ -f "$LEGACY_PATH" ]; then
+                echo "🔄 Falling back to legacy shell script..."
+                exec "$LEGACY_PATH" "$@"
+            else
+                echo "❌ No fallback available"
+                exit 1
+            fi
+        fi
+        echo "✅ Build completed successfully"
+    fi
+}
+
+# Parse command line arguments to pass through to Rust binary
+RUST_ARGS=()
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --file|-f)
+            RUST_ARGS+=("--file" "$2")
+            shift 2
+            ;;
+        --model|-m)
+            RUST_ARGS+=("--model" "$2")
+            shift 2
+            ;;
+        --help|-h)
+            # Pass help request to Rust binary after building
+            build_if_needed
+            exec "$BINARY_PATH" --help
+            ;;
+        *)
+            echo "Unknown argument: $1"
+            echo "Usage: $0 [--file <file>] [--model <model>]"
+            exit 1
+            ;;
+    esac
+done
+
+# Ensure the Rust binary is built and up to date
+build_if_needed
+
+# Execute the Rust implementation
+echo "🚀 Running Rust implementation: ingest_chunked"
+exec "$BINARY_PATH" "${RUST_ARGS[@]}"

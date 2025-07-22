@@ -9,8 +9,8 @@ HeraldStack project.
   jsonlint and prettier
 - `check-rust.sh` - Runs formatting (rustfmt), linting (clippy), tests, and
   security audit on Rust code
-- `format-md.sh` - Formats Markdown files in the project using prettier
-- `validate_naming.sh` - Validates file and directory names against project
+- `format_md` (Rust) - Formats Markdown files in the project using prettier
+- `validate_naming` (Rust) - Validates file and directory names against project
   naming conventions
 
 ## Usage
@@ -25,13 +25,13 @@ Run these scripts from the project root for best results:
 ./scripts/validation/check-rust.sh
 
 # Format Markdown files
-./scripts/validation/format-md.sh
+./src/target/release/format_md
 
 # Validate file and directory names
-./scripts/validation/validate_naming.sh
+./src/target/release/validate_naming
 
 # Fix naming issues interactively
-./scripts/validation/validate_naming.sh --fix --verbose
+./src/target/release/validate_naming --fix --verbose
 ```
 
 These scripts are designed to be used both locally during development and in

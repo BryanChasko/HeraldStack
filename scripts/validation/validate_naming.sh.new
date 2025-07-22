@@ -1,0 +1,14 @@
+#!/bin/bash
+# validate_naming.sh - Now using Rust implementation
+#
+# This script is a wrapper around the Rust validate_naming tool
+# It preserves backward compatibility during the migration
+#
+# Usage:
+#   ./scripts/validation/validate_naming.sh [--fix] [--verbose] [path]
+
+# Change to the project root directory
+cd "$(dirname "$0")/../.."
+
+# Execute the Rust binary with all arguments
+exec ./src/target/release/validate_naming "$@"

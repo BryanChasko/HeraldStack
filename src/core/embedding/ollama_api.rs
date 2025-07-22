@@ -24,10 +24,10 @@ pub struct EmbeddingRequest<'a> {
 pub struct OllamaApiClient {
     /// Base URL of the Ollama API
     base_url: String,
-    
+
     /// Timeout for API requests in seconds
     timeout: Duration,
-    
+
     /// HTTP client for making requests
     client: reqwest::Client,
 }
@@ -41,26 +41,27 @@ impl OllamaApiClient {
             client: reqwest::Client::new(),
         }
     }
-    
+
     /// Set the timeout for API requests.
     pub fn with_timeout(mut self, timeout_secs: u64) -> Self {
         self.timeout = Duration::from_secs(timeout_secs);
         self
     }
-    
+
     /// Check if the Ollama API is available.
     pub async fn check_status(&self) -> Result<bool> {
         let url = format!("{}/api/version", self.base_url);
-        let response = self.client
+        let response = self
+            .client
             .get(&url)
             .timeout(self.timeout)
             .send()
             .await
             .context("Failed to connect to Ollama API")?;
-        
+
         Ok(response.status().is_success())
     }
-    
+
     /// Generate an embedding for the given text using the specified model.
     pub async fn generate_embedding(&self, text: &str, model: &str) -> Result<Vec<f32>> {
         let url = format!("{}/api/embeddings", self.base_url);
@@ -68,62 +69,66 @@ impl OllamaApiClient {
             model,
             prompt: text,
         };
-        
-        let response = self.client
+
+        let response = self
+            .client
             .post(&url)
             .timeout(self.timeout)
             .json(&request)
             .send()
             .await
             .context("Failed to send embedding request")?;
-        
+
         if !response.status().is_success() {
             let status = response.status();
-            let text = response.text().await.unwrap_or_else(|_| "No response body".to_string());
+            let text = response
+                .text()
+                .await
+                .unwrap_or_else(|_| "No response body".to_string());
             anyhow::bail!("API error ({}): {}", status, text);
         }
-        
+
         let embedding_response: EmbeddingResponse = response
             .json()
             .await
             .context("Failed to parse embedding response")?;
-        
+
         Ok(embedding_response.embedding)
     }
-    
+
     /// Generate an embedding with automatic chunking for long text.
-    /// 
+    ///
     /// This function will automatically break down long text into smaller chunks
     /// and generate embeddings for each chunk. It's useful for handling text that
     /// might exceed the model's context window.
     pub async fn generate_embedding_chunked(
-        &self, 
-        text: &str, 
+        &self,
+        text: &str,
         model: &str,
-        max_chunk_size: usize
+        max_chunk_size: usize,
     ) -> Result<Vec<Vec<f32>>> {
         use crate::utils::chunking::{chunk_text, ChunkerOptions, ChunkingStrategy};
-        
+
         // If text is under the limit, just generate a single embedding
         if text.len() <= max_chunk_size {
             let embedding = self.generate_embedding(text, model).await?;
             return Ok(vec![embedding]);
         }
-        
+
         // Otherwise, chunk the text and generate embeddings for each chunk
         let options = ChunkerOptions {
             strategy: ChunkingStrategy::Character(max_chunk_size),
             ..Default::default()
         };
-        
+
         let chunks = chunk_text(text, options);
         let mut embeddings = Vec::with_capacity(chunks.len());
-        
+
         for chunk in chunks {
             let embedding = self.generate_embedding(&chunk, model).await?;
             embeddings.push(embedding);
         }
-        
+
         Ok(embeddings)
     }
 }
@@ -131,36 +136,18 @@ impl OllamaApiClient {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mockall::predicate::*;
-    use mockall::*;
-    
-    mock! {
-        HttpClient {}
-        
-        #[async_trait::async_trait]
-        impl HttpClient for HttpClient {
-            async fn get(&self, url: &str) -> Result<MockResponse>;
-            async fn post(&self, url: &str, body: &str) -> Result<MockResponse>;
-        }
-    }
-    
-    mock! {
-        Response {}
-        
-        impl Response for Response {
-            fn status(&self) -> u16;
-            async fn json<T: for<'de> serde::Deserialize<'de>>(&self) -> Result<T>;
-            async fn text(&self) -> Result<String>;
-        }
-    }
-    
+
     #[tokio::test]
-    async fn test_check_status_success() {
-        // Test implementation will be added when needed
+    async fn test_client_creation() {
+        let client = OllamaApiClient::new("http://localhost:11434");
+        assert_eq!(client.base_url, "http://localhost:11434");
     }
-    
+
     #[tokio::test]
-    async fn test_generate_embedding_success() {
-        // Test implementation will be added when needed
+    async fn test_client_with_timeout() {
+        let client = OllamaApiClient::new("http://localhost:11434").with_timeout(60);
+        assert_eq!(client.timeout, std::time::Duration::from_secs(60));
     }
+
+    // Additional tests will be implemented when needed
 }

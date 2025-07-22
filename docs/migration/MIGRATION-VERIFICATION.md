@@ -5,10 +5,10 @@ correctly match the behavior of the original shell scripts.
 
 ## Overview
 
-As part of our effort to migrate shell scripts to Rust, we need to ensure
-that the new implementations maintain the same behavior and output as the
-original scripts. This document explains how to use the verification tools
-to test the migration.
+As part of our effort to migrate shell scripts to Rust, we need to ensure that
+the new implementations maintain the same behavior and output as the original
+scripts. This document explains how to use the verification tools to test the
+migration.
 
 ## Verification Process
 

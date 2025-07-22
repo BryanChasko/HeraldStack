@@ -54,7 +54,7 @@ type-safe Rust implementations.
 1. **text_chunker.sh** - Text chunking utility
 2. **ingest_chunked.sh** - Character-based chunking for Marvel character data
 3. **test_embedding_size.sh** - Embedding size testing utility
-4. **status.sh** - System status checking
+4. **status** - (Rust tool) System status checking
 5. **JSON tools** (format_json.sh, validate_json_schema.sh)
 
 ### Migration Strategy
@@ -178,13 +178,28 @@ type-safe Rust implementations.
 
 ### Current Status (Updated)
 
-✅ **Successfully migrated text_chunker.sh to Rust**
+✅ **Successfully migrated ingest_chunked.sh to Rust**
 
-- Created a compatibility wrapper to maintain script interface
-- Implemented character-based, size-based, and semantic chunking strategies
-- Compiled and tested the text_chunker binary successfully
-- Original script backed up as `text_chunker.sh.legacy`
-- New implementation at `src/utils/chunking.rs` and `src/utils/chunker_bin.rs`
+- Created complete Rust implementation with character data processing
+- Implemented async embedding generation with OllamaApiClient
+- Added comprehensive CLI interface with clap
+- Compiled and tested successfully with proper error handling
+- Original script backed up as `ingest_chunked.sh.legacy`
+- New implementation at `src/ingest/chunked_ingest.rs`
+- **Status**: Ready for shell script removal after testing protocol
+
+✅ **Successfully migrated format_json.sh to Rust**
+
+- Created comprehensive JSON formatting utility with registry management
+- Implemented file validation and interactive registration features
+- Added support for prettier and jq integration
+- Compiled and tested successfully with full CLI interface
+- Original script backed up as `format_json.sh.legacy`
+- New implementation at `src/utils/json_tools/format_json.rs`
+- **Co-location completed**: Moved documentation to
+  `src/utils/json_tools/JSON-TOOLS.md`
+- **Shell script removed**: Direct Rust binary usage, no wrapper needed
+- **Status**: Migration complete, ready for testing protocol
 
 ✅ **Successfully migrated test_embedding_size.sh to Rust**
 
@@ -215,18 +230,40 @@ type-safe Rust implementations.
 - Implementation timeline and roadmap
 - Testing and verification strategies
 
+✅ **Successfully migrated validate_json_schema.sh to Rust**
+
+- Created comprehensive JSON schema validation utility with generate/validate
+  commands
+- Implemented store-specific validation and schema generation features
+- Added support for both ajv and fallback validation methods
+- Compiled and tested successfully with full CLI interface using subcommands
+- Original script backed up as `validate_json_schema.sh.legacy`
+- New implementation at `src/utils/json_tools/validate_json_schema.rs`
+- **Co-location completed**: Implementation co-located with related JSON tools
+- **Shell script removed**: Direct Rust binary usage, no wrapper needed
+- **Status**: Migration complete, ready for testing protocol
+
 ### Scripts Pending Migration
 
 The following scripts are still pending migration to Rust:
 
-1. 🔄 `ingest_chunked.sh` - Character-based chunking for data ingestion (High
+1. 🔄 `ingest_marvelai.sh` - Marvel AI data ingestion (Medium Priority)
+2. 🔄 `test_basic_embedding.sh` - Basic embedding testing (Medium Priority)
+3. 🔄 `ingest.sh` - Main ingestion script (High Priority)
+4. 🔄 `test_text_chunker.sh` - Tests for text chunking (Low Priority)
+5. 🔄 `ingest_single_character.sh` - Single character ingestion (Medium
    Priority)
-2. 🔄 `ingest_marvelai.sh` - Marvel AI data ingestion (Medium Priority)
-3. 🔄 `test_basic_embedding.sh` - Basic embedding testing (Medium Priority)
-4. 🔄 `ingest.sh` - Main ingestion script (High Priority)
-5. 🔄 `test_text_chunker.sh` - Tests for text chunking (Low Priority)
-6. 🔄 `ingest_single_character.sh` - Single character ingestion (Medium
-   Priority)
+
+### Script Removal Protocol
+
+For completed migrations, follow the cleanup process documented in
+`docs/migration/SCRIPT-CLEANUP-PLAN.md`:
+
+1. **Testing Phase**: Complete functional equivalence, performance, edge case,
+   and integration testing
+2. **Grace Period**: Add deprecation notices and allow 1 week for transition
+3. **Removal Phase**: Remove shell scripts and update documentation
+4. **Legacy Cleanup**: Remove .legacy files after 1 month grace period
 
 ### Testing Strategy
 

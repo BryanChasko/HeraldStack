@@ -6,7 +6,7 @@ This directory contains scripts used during development.
 
 - `ingest.sh` - Core ingestion script
 - `query.sh` - Query the vector database
-- `status.sh` - Check system status
+- `status` - (Rust tool) Check system status
 - `text_chunker.sh` - Text chunking utilities
 
 ## Usage

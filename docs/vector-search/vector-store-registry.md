@@ -25,7 +25,7 @@ The registry is maintained in `data/vector_stores_registry.json` and contains:
 
 ### JSON Formatting Utility
 
-The `format_json.sh` script provides tools for:
+The `format_json` Rust binary provides tools for:
 
 - Formatting JSON files according to project standards
 - Only processing files that are registered in the vector store registry
@@ -33,23 +33,26 @@ The `format_json.sh` script provides tools for:
 - Adding new files to the registry
 
 ```bash
+# Build the tool first
+cargo build --release
+
 # Format all registered files
-./scripts/format_json.sh --all
+./target/release/format_json --all
 
 # Format files for a specific store
-./scripts/format_json.sh --store marvel_characters
+./target/release/format_json --store marvel_characters
 
 # Format a specific file (must be registered)
-./scripts/format_json.sh --file ./personality-archetypes/Heralds.json
+./target/release/format_json --file ./personality-archetypes/Heralds.json
 
 # Check format without modifying
-./scripts/format_json.sh --check
+./target/release/format_json --check
 
 # Register a new file
-./scripts/format_json.sh --register ./path/to/new/file.json
+./target/release/format_json --register ./path/to/new/file.json
 
 # Validate the registry
-./scripts/format_json.sh --validate-registry
+./target/release/format_json --validate-registry
 ```
 
 ### JSON Schema Validation
@@ -105,7 +108,7 @@ To add a new vector store:
 1. Use the registration tool:
 
    ```bash
-   ./scripts/format_json.sh --register ./path/to/first/file.json
+   ./target/release/format_json --register ./path/to/first/file.json
    ```
 
 2. Follow the prompts to define store properties

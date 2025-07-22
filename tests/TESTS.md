@@ -28,8 +28,8 @@ To verify the migration from shell scripts to Rust, use the verification script:
 ./scripts/verify_rust_migration.sh --clean
 ```
 
-The verification script compares the output of original shell scripts
-(`.legacy` files) with the new Rust implementations to ensure identical results.
+The verification script compares the output of original shell scripts (`.legacy`
+files) with the new Rust implementations to ensure identical results.
 
 ## Migration Verification
 
