@@ -54,8 +54,10 @@ professional journey.
 - [Naming Conventions](docs/naming-conventions.md) - Standards for files and
   directories
 - Automated validation scripts in `scripts/validation`
+  (see [VALIDATION.md](scripts/validation/VALIDATION.md))
 - JSON tooling and vector store registry in `scripts/json-tools`
-- [Project Structure](RECOMMENDED-STRUCTURE.md) - Recommended organization
+  (see [JSON-TOOLS.md](scripts/json-tools/JSON-TOOLS.md))
+- [Project Structure](docs/migration/RECOMMENDED-STRUCTURE.md) - Recommended organization
 
 ## Operating Model
 
@@ -81,6 +83,7 @@ pragmatic execution, and narrative continuity.
   notes
 - [Directory Reorganization](docs/migration/DIRECTORY-REORGANIZATION.md) - File
   reorganization details
+- [Migration Documentation](docs/migration/MIGRATION.md) - Migration overview
 
 ## Ethics & Consent
 
@@ -92,9 +95,10 @@ guidelines including those defined in
 
 - **Code Quality & Validation**: Scripts for checking and formatting code are
   available in `scripts/validation/`. See
-  `scripts/validation/VALIDATION_TOOLS.md` for usage details.
+  [VALIDATION.md](scripts/validation/VALIDATION.md) for usage details.
 - **Models**: Model configurations can be found in `config/models/`.
-- **Test Data**: Test fixtures are available in `tests/fixtures/`.
+- **Test Data**: Test fixtures are available in `tests/fixtures/`. See
+  [FIXTURES.md](tests/fixtures/FIXTURES.md) for details.
 
 ## Further Information
 
