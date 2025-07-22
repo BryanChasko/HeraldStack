@@ -26,7 +26,7 @@ fi
 
 # Function to ensure Rust binary is built
 ensure_rust_binary() {
-  if [ ! -f "$BINARY_PATH" ]; then
+  if [ ! -f "$BINARY_PATH" ] || [ "$BINARY_PATH" -ot "$RUST_DIR/utils/chunking.rs" ]; then
     echo "🔨 Building text_chunker binary..."
     (cd "$RUST_DIR" && cargo build --release --features cli --bin text_chunker)
     

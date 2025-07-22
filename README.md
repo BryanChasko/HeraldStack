@@ -73,16 +73,20 @@ pragmatic execution, and narrative continuity.
 - Personality Models
 - Workflows
 - [JSONL Format for Vector Embedding](docs/vector-search/jsonl-ingestion.md)
-- [Directory Structure](docs/migration/RECOMMENDED-STRUCTURE.md) - Organization standards
-- [Implementation Plan](docs/migration/IMPLEMENTATION-PLAN.md) - Migration strategy
-- [Ingest Migration](docs/migration/INGEST-MIGRATION.md) - Rust code migration notes
+- [Directory Structure](docs/migration/RECOMMENDED-STRUCTURE.md) - Organization
+  standards
+- [Implementation Plan](docs/migration/IMPLEMENTATION-PLAN.md) - Migration
+  strategy
+- [Ingest Migration](docs/migration/INGEST-MIGRATION.md) - Rust code migration
+  notes
 - [Directory Reorganization](docs/migration/DIRECTORY-REORGANIZATION.md) - File
   reorganization details
 
 ## Ethics & Consent
 
 HeraldStack operates on consent-based principles and follows clear ethical
-guidelines including those defined in [LawsOfRobotics.json](config/ethics/LawsOfRobotics.json).
+guidelines including those defined in
+[LawsOfRobotics.json](config/ethics/LawsOfRobotics.json).
 
 ## Development Tools
 
@@ -98,4 +102,4 @@ See docs/DETAILED.md for more information.
 
 ---
 
-© 2025 Bryan Chasko
+Shared under MIT Open License 2025 Bryan Chasko

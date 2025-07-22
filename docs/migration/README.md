@@ -1,7 +1,7 @@
 # Migration Documentation
 
-This directory contains documentation related to the project restructuring
-and migration efforts.
+This directory contains documentation related to the project restructuring and
+migration efforts.
 
 ## Files
 
@@ -12,6 +12,6 @@ and migration efforts.
 
 ## Purpose
 
-These documents track the organizational improvements made to the HARALD
-project structure. They provide context on decisions made during the
-migration process and serve as a reference for future development.
+These documents track the organizational improvements made to the HARALD project
+structure. They provide context on decisions made during the migration process
+and serve as a reference for future development.

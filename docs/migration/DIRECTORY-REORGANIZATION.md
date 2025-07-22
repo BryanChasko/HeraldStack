@@ -5,17 +5,17 @@ HARALD project directory structure.
 
 ## Files Moved
 
-| File | Original Location | New Location |
-|------|------------------|-------------|
-| `LawsOfRobotics.json` | Root | `config/ethics/` |
-| `Modelfile` | Root | `config/models/` |
-| `rustfmt.toml` | Root | `src/` |
-| `test_single_character.json` | Root | `tests/fixtures/` |
-| `GITHUB.md` | Root | `docs/` |
-| `IMPLEMENTATION-PLAN.md` | Root | `docs/migration/` |
-| `RECOMMENDED-STRUCTURE.md` | Root | `docs/migration/` |
-| `SCRIPT-MIGRATION.md` | Root | `docs/migration/` |
-| `INGEST-MIGRATION.md` | Root | `docs/migration/` |
+| File                         | Original Location | New Location      |
+| ---------------------------- | ----------------- | ----------------- |
+| `LawsOfRobotics.json`        | Root              | `config/ethics/`  |
+| `Modelfile`                  | Root              | `config/models/`  |
+| `rustfmt.toml`               | Root              | `src/`            |
+| `test_single_character.json` | Root              | `tests/fixtures/` |
+| `GITHUB.md`                  | Root              | `docs/`           |
+| `IMPLEMENTATION-PLAN.md`     | Root              | `docs/migration/` |
+| `RECOMMENDED-STRUCTURE.md`   | Root              | `docs/migration/` |
+| `SCRIPT-MIGRATION.md`        | Root              | `docs/migration/` |
+| `INGEST-MIGRATION.md`        | Root              | `docs/migration/` |
 
 ## README Updates
 

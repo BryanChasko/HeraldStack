@@ -1,8 +1,8 @@
-```markdown
+````markdown
 # Ingest Module Migration
 
-This document records the migration of the Rust ingest code from `rust_ingest/` to
-`src/ingest/`.
+This document records the migration of the Rust ingest code from `rust_ingest/`
+to `src/ingest/`.
 
 ## Migration Steps Completed
 
@@ -24,6 +24,7 @@ This document records the migration of the Rust ingest code from `rust_ingest/` 
    ```bash
    ./scripts/dev/build-ingest.sh --test
    ```
+````
 
 2. Update any scripts that referenced the old `rust_ingest` directory
 
@@ -39,11 +40,14 @@ This document records the migration of the Rust ingest code from `rust_ingest/` 
 1. All source code is now in the `src` directory, following standard conventions
 2. The code is organized by domain rather than technology
 3. Module boundaries are clearer in the new structure
-4. Future functionality can be added to the `src` directory with consistent organization
+4. Future functionality can be added to the `src` directory with consistent
+   organization
 
 ## Shell Scripts Migration Plan
 
-This section outlines the plan to migrate essential shell scripts to Rust. The goal is to replace critical bash scripts with more maintainable, performant, and type-safe Rust implementations.
+This section outlines the plan to migrate essential shell scripts to Rust. The
+goal is to replace critical bash scripts with more maintainable, performant, and
+type-safe Rust implementations.
 
 ### Migration Candidates (Prioritized)
 
@@ -141,7 +145,7 @@ This section outlines the plan to migrate essential shell scripts to Rust. The g
            )
            // other subcommands
            .get_matches();
-           
+
        // handle commands
    }
    ```
@@ -172,13 +176,57 @@ This section outlines the plan to migrate essential shell scripts to Rust. The g
    - ⏳ Create compatibility wrappers for all scripts
    - ⏳ Update documentation
 
-### Current Status (July 21, 2025)
+### Current Status (Updated)
 
-- Successfully migrated text_chunker.sh to Rust
+✅ **Successfully migrated text_chunker.sh to Rust**
+
 - Created a compatibility wrapper to maintain script interface
-- Implemented both character-based and semantic chunking strategies
-- Started work on the Ollama API client module
+- Implemented character-based, size-based, and semantic chunking strategies
 - Compiled and tested the text_chunker binary successfully
+- Original script backed up as `text_chunker.sh.legacy`
+- New implementation at `src/utils/chunking.rs` and `src/utils/chunker_bin.rs`
+
+✅ **Successfully migrated test_embedding_size.sh to Rust**
+
+- Implemented as part of a comprehensive embedding_tool CLI
+- Added test-sizes command with flexible configuration
+- Created detailed logging and reporting functionality
+- Original script backed up as `test_embedding_size.sh.legacy`
+- New implementation at `src/core/embedding/embedding_bin.rs`
+
+✅ **Created a robust Ollama API client module**
+
+- Implemented check_status functionality
+- Added embedding generation with timeout handling
+- Added support for chunked embeddings for long text
+- Implemented proper error handling and reporting
+- New implementation at `src/core/embedding/ollama_api.rs`
+
+✅ **Created wrapper scripts for backwards compatibility**
+
+- `text_chunker.sh` - Now a wrapper around the Rust implementation
+- `test_embedding_size.sh` - Now a wrapper around the Rust implementation
+- Automatic Rust binary rebuilding when source changes
+- Error handling and fallback mechanisms
+
+📝 **Created cleanup documentation**
+
+- Migration tracking document at `docs/migration/SCRIPT-CLEANUP-PLAN.md`
+- Implementation timeline and roadmap
+- Testing and verification strategies
+
+### Scripts Pending Migration
+
+The following scripts are still pending migration to Rust:
+
+1. 🔄 `ingest_chunked.sh` - Character-based chunking for data ingestion (High
+   Priority)
+2. 🔄 `ingest_marvelai.sh` - Marvel AI data ingestion (Medium Priority)
+3. 🔄 `test_basic_embedding.sh` - Basic embedding testing (Medium Priority)
+4. 🔄 `ingest.sh` - Main ingestion script (High Priority)
+5. 🔄 `test_text_chunker.sh` - Tests for text chunking (Low Priority)
+6. 🔄 `ingest_single_character.sh` - Single character ingestion (Medium
+   Priority)
 
 ### Testing Strategy
 
@@ -193,5 +241,7 @@ During the transition period:
 1. Maintain shell script wrappers that call the Rust implementations
 2. Ensure consistent output formats and logging
 3. Document migration details for users
+
+```
 
 ```

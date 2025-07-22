@@ -1,7 +1,7 @@
 # Recommended Project Structure
 
-This document outlines recommended organizational improvements for the
-HARALD project based on developer best practices.
+This document outlines recommended organizational improvements for the HARALD
+project based on developer best practices.
 
 ## Current vs Future Structure
 
@@ -28,7 +28,7 @@ HARALD/
 │   ├── api/              # API endpoints and handlers
 │   ├── core/             # Core application logic
 │   │   ├── embedding/    # Embedding-related logic
-│   │   ├── entities/     # Entity management logic 
+│   │   ├── entities/     # Entity management logic
 │   │   └── memory/       # Memory handling logic
 │   ├── ingest/           # Ingestion pipeline (from rust_ingest)
 │   └── utils/            # Shared utilities and helpers

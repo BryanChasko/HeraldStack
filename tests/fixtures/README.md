@@ -4,12 +4,14 @@ This directory contains test data files used for testing the HARALD system.
 
 ## Files
 
-- `test_single_character.json` - Sample character data for testing ingest functionality
+- `test_single_character.json` - Sample character data for testing ingest
+  functionality
 
 ## Usage
 
-These fixtures are intended for unit and integration testing. They provide controlled,
-consistent data for verifying that system components work as expected.
+These fixtures are intended for unit and integration testing. They provide
+controlled, consistent data for verifying that system components work as
+expected.
 
 When adding new test fixtures:
 

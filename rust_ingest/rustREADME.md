@@ -68,7 +68,7 @@ See our
 
 | Date       | Milestone                                                     |
 | ---------- | ------------------------------------------------------------- |
-| 2025-07-xx | PoC compiles under Rust 1.77, hnsw_rs 0.3.2                   |
+| 2025-07-xx | PoC compiles on Rust 1.77 with hnsw_rs 0.3.2, replacing FAISS |
 | TODO       | Replace blocking `reqwest` with connection-pooled async calls |
 | TODO       | Bench vs Python FAISS ingest                                  |
 

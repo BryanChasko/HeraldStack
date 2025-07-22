@@ -1,0 +1,14 @@
+HARALD EMBEDDING SIZE TEST
+Started at: 2025-07-21 21:01:12
+
+Testing sizes: [10, 20, 30]
+
+--------------------------------------------
+Testing size: 10 characters
+TIMEOUT after 15s
+Text size 10 is too large
+
+====================================================
+TEST COMPLETE
+Maximum successful text size: 0 characters
+Finished at: 2025-07-21 21:01:27

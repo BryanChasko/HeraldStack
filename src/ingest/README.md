@@ -1,8 +1,8 @@
 # HARALD Ingest Module
 
-This directory contains the Rust implementation of the HARALD ingestion pipeline,
-migrated from the previous `rust_ingest` directory as part of our organizational
-improvements.
+This directory contains the Rust implementation of the HARALD ingestion
+pipeline, migrated from the previous `rust_ingest` directory as part of our
+organizational improvements.
 
 ## Key Components
 

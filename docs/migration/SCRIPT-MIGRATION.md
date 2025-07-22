@@ -1,6 +1,7 @@
 # Script Migration Plan
 
-This document outlines how to migrate existing scripts to the new directory structure.
+This document outlines how to migrate existing scripts to the new directory
+structure.
 
 ## Development Scripts
 
