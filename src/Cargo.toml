@@ -1,15 +1,22 @@
 [package]
-name = "harald_ingest"
+name = "harald"
 version = "0.1.0"
 edition = "2021"
+description = "A context-aware, emotionally adaptive AI framework"
+authors = ["Bryan Chasko"]
 
 [[bin]]
 name = "harald_ingest"
 path = "ingest/main.rs"
 
+[[bin]]
+name = "text_chunker"
+path = "utils/chunker_bin.rs"
+required-features = ["cli"]
+
 [lib]
-name = "harald_ingest"
-path = "ingest/lib.rs"
+name = "harald"
+path = "lib.rs"
 
 [dependencies]
 reqwest = { version = "0.12", features = ["json", "stream"] }
@@ -19,11 +26,13 @@ serde_json = "1"
 ndarray = "0.15"
 hnsw_rs = "0.3.2"
 walkdir = "2"
-clap = { version = "4", features = ["derive"] }
+clap = { version = "4", features = ["derive"], optional = true }
 anyhow = "1"
 bincode = "1.3"
 
 [features]
+default = []
+cli = ["clap"]
 integration-tests = []
 
 [dev-dependencies]

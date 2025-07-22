@@ -1,3 +1,4 @@
+```markdown
 # Ingest Module Migration
 
 This document records the migration of the Rust ingest code from `rust_ingest/` to
@@ -39,3 +40,158 @@ This document records the migration of the Rust ingest code from `rust_ingest/` 
 2. The code is organized by domain rather than technology
 3. Module boundaries are clearer in the new structure
 4. Future functionality can be added to the `src` directory with consistent organization
+
+## Shell Scripts Migration Plan
+
+This section outlines the plan to migrate essential shell scripts to Rust. The goal is to replace critical bash scripts with more maintainable, performant, and type-safe Rust implementations.
+
+### Migration Candidates (Prioritized)
+
+1. **text_chunker.sh** - Text chunking utility
+2. **ingest_chunked.sh** - Character-based chunking for Marvel character data
+3. **test_embedding_size.sh** - Embedding size testing utility
+4. **status.sh** - System status checking
+5. **JSON tools** (format_json.sh, validate_json_schema.sh)
+
+### Migration Strategy
+
+#### Phase 1: Core Text Chunking Utilities
+
+1. **Create text chunking module** in `src/utils/chunking.rs`
+   - Implement character-based chunking
+   - Implement size-based chunking
+   - Implement semantic chunking
+   - Support all functionality from text_chunker.sh
+
+2. **API Design**:
+
+   ```rust
+   pub enum ChunkingStrategy {
+       Size(usize),      // max_size
+       Character(usize), // target_size
+       Semantic,         // natural breaks
+   }
+
+   pub struct ChunkerOptions {
+       strategy: ChunkingStrategy,
+       preserve_whitespace: bool,
+       delimiter: Option<String>,
+   }
+
+   pub fn chunk_text(text: &str, options: ChunkerOptions) -> Vec<String>;
+   ```
+
+#### Phase 2: Embed API Integration
+
+1. **Create API module** in `src/core/embedding/ollama_api.rs`:
+   - Implement functions for checking Ollama API status
+   - Implement embedding generation with proper error handling
+   - Support timeout and chunking for larger texts
+
+2. **API Design**:
+
+   ```rust
+   pub struct OllamaApiClient {
+       base_url: String,
+       timeout: Duration,
+   }
+
+   impl OllamaApiClient {
+       pub fn new(base_url: &str) -> Self;
+       pub fn check_status(&self) -> Result<bool>;
+       pub fn generate_embedding(&self, text: &str, model: &str) -> Result<Vec<f32>>;
+   }
+   ```
+
+#### Phase 3: Ingest Chunked Implementation
+
+1. **Extend existing ingest module**:
+   - Add character-based chunking to `src/ingest/ingest.rs`
+   - Support for JSON field extraction and processing
+   - Progress logging and status reporting
+
+2. **Command-line interface extensions**:
+
+   ```rust
+   // CLI Options for chunked ingestion
+   pub struct ChunkedIngestOptions {
+       source_file: PathBuf,
+       chunk_size: usize,
+       model: String,
+       log_file: Option<PathBuf>,
+   }
+   ```
+
+#### Phase 4: CLI Enhancements
+
+1. **Unified CLI interface** in `src/main.rs`:
+
+   ```rust
+   fn main() {
+       let matches = clap::Command::new("harald")
+           .subcommand(
+               clap::Command::new("chunk")
+                   .about("Chunk text using various strategies")
+                   // options
+           )
+           .subcommand(
+               clap::Command::new("ingest")
+                   .about("Ingest data into the vector database")
+                   // options
+           )
+           // other subcommands
+           .get_matches();
+           
+       // handle commands
+   }
+   ```
+
+### Implementation Roadmap
+
+1. **Week 1**: Implement text chunking module
+   - ✅ Create chunking module in src/utils/chunking.rs
+   - ✅ Create binary wrapper in src/utils/chunker_bin.rs
+   - ✅ Update build configuration in Cargo.toml
+   - ✅ Create compatibility wrapper scripts
+
+2. **Week 2**: Implement Ollama API client
+   - ✅ Create Ollama API client module in src/core/embedding/ollama_api.rs
+   - ⏳ Implement chunking-aware embedding generation
+   - ⏳ Add proper error handling and logging
+   - ⏳ Create test cases for API client
+
+3. **Week 3**: Extend ingest module with chunked ingestion
+   - ⏳ Integrate text chunking with ingest process
+   - ⏳ Implement character-based chunking for large fields
+   - ⏳ Support semantic chunking for description fields
+   - ⏳ Add progress reporting and better error messages
+
+4. **Week 4**: Create unified CLI and compatibility wrappers
+   - ⏳ Design comprehensive CLI interface
+   - ⏳ Implement subcommands (ingest, query, chunk, etc.)
+   - ⏳ Create compatibility wrappers for all scripts
+   - ⏳ Update documentation
+
+### Current Status (July 21, 2025)
+
+- Successfully migrated text_chunker.sh to Rust
+- Created a compatibility wrapper to maintain script interface
+- Implemented both character-based and semantic chunking strategies
+- Started work on the Ollama API client module
+- Compiled and tested the text_chunker binary successfully
+
+### Testing Strategy
+
+1. Create unit tests for each component
+2. Create integration tests that compare output with existing shell scripts
+3. Benchmark performance against shell script implementations
+
+### Compatibility Considerations
+
+During the transition period:
+
+1. Maintain shell script wrappers that call the Rust implementations
+2. Ensure consistent output formats and logging
+3. Document migration details for users
+
+```

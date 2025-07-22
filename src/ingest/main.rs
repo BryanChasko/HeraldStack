@@ -9,8 +9,13 @@
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
-use harald_ingest::query::QueryConfig;
-use harald_ingest::{ingest, query};
+
+// TODO: Update these imports once modules are fully migrated
+// For now, we'll use the local module paths directly
+mod embed;
+mod ingest;
+mod query;
+use query::QueryConfig;
 
 /// Command-line interface for HARALD semantic search system.
 ///
@@ -96,7 +101,7 @@ async fn main() -> Result<()> {
             max_concurrent,
         } => {
             // Create ingest configuration
-            let mut config = harald_ingest::ingest::IngestConfig::default();
+            let mut config = ingest::IngestConfig::default();
 
             if let Some(root_dir) = root {
                 config.root_dir = root_dir;

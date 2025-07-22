@@ -76,7 +76,8 @@ pragmatic execution, and narrative continuity.
 - [Directory Structure](docs/migration/RECOMMENDED-STRUCTURE.md) - Organization standards
 - [Implementation Plan](docs/migration/IMPLEMENTATION-PLAN.md) - Migration strategy
 - [Ingest Migration](docs/migration/INGEST-MIGRATION.md) - Rust code migration notes
-- [Directory Reorganization](docs/migration/DIRECTORY-REORGANIZATION.md) - File reorganization details
+- [Directory Reorganization](docs/migration/DIRECTORY-REORGANIZATION.md) - File
+  reorganization details
 
 ## Ethics & Consent
 
