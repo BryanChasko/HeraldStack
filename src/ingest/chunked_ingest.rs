@@ -1,4 +1,6 @@
+mod chunking_utils;
 use anyhow::{Context, Result};
+use chunking_utils::chunk_entity_fields;
 use clap::{Arg, Command};
 use serde_json::Value;
 use std::fs;
@@ -7,7 +9,6 @@ use tokio::time;
 
 // Import our existing utilities through the harald crate
 use harald::core::embedding::ollama_api::OllamaApiClient;
-use harald::utils::chunking::{chunk_text, ChunkerOptions, ChunkingStrategy};
 
 /// Character data structure for Marvel character processing
 #[derive(Debug, Clone)]
@@ -29,90 +30,36 @@ struct CharacterChunk {
     content: String,
 }
 
-/// Statistics for the ingestion process
-#[derive(Debug)]
-struct IngestionStats {
-    successful_chunks: usize,
-    failed_chunks: usize,
-    total_chunks: usize,
-    start_time: Instant,
-}
-
-impl IngestionStats {
-    fn new() -> Self {
-        Self {
-            successful_chunks: 0,
-            failed_chunks: 0,
-            total_chunks: 0,
-            start_time: Instant::now(),
-        }
-    }
-
-    fn success_rate(&self) -> f64 {
-        if self.total_chunks == 0 {
-            0.0
-        } else {
-            (self.successful_chunks as f64 / self.total_chunks as f64) * 100.0
-        }
-    }
-
-    fn elapsed_time(&self) -> Duration {
-        self.start_time.elapsed()
-    }
-}
 
 impl CharacterData {
-    /// Parse character data from JSON value
+    /// Parse character data from JSON value, robust to missing fields
     fn from_json(value: &Value) -> Result<Self> {
-        let character_name = value["character_name"]
-            .as_str()
-            .unwrap_or("Unknown")
-            .to_string();
-
-        let first_appearance = value["first_appearance"]
-            .as_str()
-            .unwrap_or("Unknown")
-            .to_string();
-
-        let affiliations = value["affiliations"]
-            .as_array()
-            .unwrap_or(&vec![])
-            .iter()
-            .filter_map(|v| v.as_str())
-            .map(|s| s.to_string())
-            .collect();
-
-        let core_attributes = value["core_attributes"]
-            .as_array()
-            .unwrap_or(&vec![])
-            .iter()
-            .filter_map(|v| v.as_str())
-            .map(|s| s.to_string())
-            .collect();
-
-        let inspirational_themes = value["inspirational_themes"]
-            .as_array()
-            .unwrap_or(&vec![])
-            .iter()
-            .filter_map(|v| v.as_str())
-            .map(|s| s.to_string())
-            .collect();
-
-        let traits = value["traits"]
-            .as_array()
-            .unwrap_or(&vec![])
-            .iter()
-            .filter_map(|v| v.as_str())
-            .map(|s| s.to_string())
-            .collect();
-
-        let ai_alignment = value["ai_alignment"]
-            .as_str()
-            .unwrap_or("Unknown")
-            .to_string();
-
-        let description = value["description"].as_str().map(|s| s.to_string());
-
+        let character_name = value.get("character_name")
+            .and_then(|v| v.as_str())
+            .unwrap_or("").to_string();
+        let first_appearance = value.get("first_appearance")
+            .and_then(|v| v.as_str())
+            .unwrap_or("").to_string();
+        let affiliations = value.get("affiliations")
+            .and_then(|v| v.as_array())
+            .map(|arr| arr.iter().filter_map(|v| v.as_str()).map(|s| s.to_string()).collect())
+            .unwrap_or_else(Vec::new);
+        let core_attributes = value.get("core_attributes")
+            .and_then(|v| v.as_array())
+            .map(|arr| arr.iter().filter_map(|v| v.as_str()).map(|s| s.to_string()).collect())
+            .unwrap_or_else(Vec::new);
+        let inspirational_themes = value.get("inspirational_themes")
+            .and_then(|v| v.as_array())
+            .map(|arr| arr.iter().filter_map(|v| v.as_str()).map(|s| s.to_string()).collect())
+            .unwrap_or_else(Vec::new);
+        let traits = value.get("traits")
+            .and_then(|v| v.as_array())
+            .map(|arr| arr.iter().filter_map(|v| v.as_str()).map(|s| s.to_string()).collect())
+            .unwrap_or_else(Vec::new);
+        let ai_alignment = value.get("ai_alignment")
+            .and_then(|v| v.as_str())
+            .unwrap_or("").to_string();
+        let description = value.get("description").and_then(|v| v.as_str()).map(|s| s.to_string());
         Ok(CharacterData {
             character_name,
             first_appearance,
@@ -125,149 +72,7 @@ impl CharacterData {
         })
     }
 
-    /// Convert character data into chunks for embedding
-    fn to_chunks(&self) -> Result<Vec<CharacterChunk>> {
-        let mut chunks = Vec::new();
-        const MAX_CHUNK_SIZE: usize = 250;
-
-        // Add character name - use as-is since it's typically short
-        chunks.push(CharacterChunk {
-            label: "Name".to_string(),
-            content: self.character_name.clone(),
-        });
-
-        // Add first appearance - use as-is since it's typically short
-        chunks.push(CharacterChunk {
-            label: "First Appearance".to_string(),
-            content: self.first_appearance.clone(),
-        });
-
-        // Process affiliations with character-based chunking if long
-        let affiliations_text = self.affiliations.join(", ");
-        if affiliations_text.len() > MAX_CHUNK_SIZE {
-            println!(
-                "⚠️  Long affiliations text ({} chars), using character-based chunking",
-                affiliations_text.len()
-            );
-            let options = ChunkerOptions {
-                strategy: ChunkingStrategy::Character(MAX_CHUNK_SIZE),
-                ..Default::default()
-            };
-            let chunked = chunk_text(&affiliations_text, options);
-            for chunk in chunked {
-                chunks.push(CharacterChunk {
-                    label: "Affiliations".to_string(),
-                    content: chunk,
-                });
-            }
-        } else {
-            chunks.push(CharacterChunk {
-                label: "Affiliations".to_string(),
-                content: affiliations_text,
-            });
-        }
-
-        // Process attributes with character-based chunking if long
-        let attributes_text = self.core_attributes.join(", ");
-        if attributes_text.len() > MAX_CHUNK_SIZE {
-            println!(
-                "⚠️  Long attributes text ({} chars), using character-based chunking",
-                attributes_text.len()
-            );
-            let options = ChunkerOptions {
-                strategy: ChunkingStrategy::Character(MAX_CHUNK_SIZE),
-                ..Default::default()
-            };
-            let chunked = chunk_text(&attributes_text, options);
-            for chunk in chunked {
-                chunks.push(CharacterChunk {
-                    label: "Attributes".to_string(),
-                    content: chunk,
-                });
-            }
-        } else {
-            chunks.push(CharacterChunk {
-                label: "Attributes".to_string(),
-                content: attributes_text,
-            });
-        }
-
-        // Process themes with character-based chunking
-        let themes_text = self.inspirational_themes.join(", ");
-        if themes_text.len() > MAX_CHUNK_SIZE {
-            println!(
-                "⚠️  Long themes text ({} chars), using character-based chunking",
-                themes_text.len()
-            );
-            let options = ChunkerOptions {
-                strategy: ChunkingStrategy::Character(MAX_CHUNK_SIZE),
-                ..Default::default()
-            };
-            let chunked = chunk_text(&themes_text, options);
-            for chunk in chunked {
-                chunks.push(CharacterChunk {
-                    label: "Themes".to_string(),
-                    content: chunk,
-                });
-            }
-        } else {
-            chunks.push(CharacterChunk {
-                label: "Themes".to_string(),
-                content: themes_text,
-            });
-        }
-
-        // Process traits with character-based chunking
-        let traits_text = self.traits.join(", ");
-        if traits_text.len() > MAX_CHUNK_SIZE {
-            println!(
-                "⚠️  Long traits text ({} chars), using character-based chunking",
-                traits_text.len()
-            );
-            let options = ChunkerOptions {
-                strategy: ChunkingStrategy::Character(MAX_CHUNK_SIZE),
-                ..Default::default()
-            };
-            let chunked = chunk_text(&traits_text, options);
-            for chunk in chunked {
-                chunks.push(CharacterChunk {
-                    label: "Traits".to_string(),
-                    content: chunk,
-                });
-            }
-        } else {
-            chunks.push(CharacterChunk {
-                label: "Traits".to_string(),
-                content: traits_text,
-            });
-        }
-
-        // Add AI alignment - typically short
-        chunks.push(CharacterChunk {
-            label: "AI Alignment".to_string(),
-            content: self.ai_alignment.clone(),
-        });
-
-        // For any description field, use semantic chunking
-        if let Some(description) = &self.description {
-            if !description.is_empty() {
-                println!("📝 Processing description field with semantic chunking");
-                let options = ChunkerOptions {
-                    strategy: ChunkingStrategy::Semantic,
-                    ..Default::default()
-                };
-                let chunked = chunk_text(description, options);
-                for chunk in chunked {
-                    chunks.push(CharacterChunk {
-                        label: "Description".to_string(),
-                        content: chunk,
-                    });
-                }
-            }
-        }
-
-        Ok(chunks)
-    }
+    // Remove to_chunks; use chunk_entity_fields instead
 }
 
 /// Generate embedding for a text chunk
@@ -373,75 +178,106 @@ async fn main() -> Result<()> {
         }
     }
 
-    // Read and parse the input file
-    println!("📄 Processing file: {}", file_path);
+    // Read and process the input file as JSONL
+    println!("📄 Processing JSONL file: {}", file_path);
     let file_content = fs::read_to_string(file_path)
         .with_context(|| format!("Failed to read file: {}", file_path))?;
 
-    let json_data: Value =
-        serde_json::from_str(&file_content).with_context(|| "Failed to parse JSON")?;
+    let mut total_characters = 0;
+    let mut total_chunks = 0;
+    let mut total_successful_chunks = 0;
+    let mut total_failed_chunks = 0;
+    let mut processed_characters = 0;
 
-    // Extract the first character (assuming array format)
-    let character_json = json_data
-        .as_array()
-        .and_then(|arr| arr.first())
-        .ok_or_else(|| anyhow::anyhow!("No character data found in file"))?;
-
-    let character = CharacterData::from_json(character_json)?;
-    println!("🔍 Processing character: {}", character.character_name);
-    println!("🔄 Using character-based chunking for large fields");
-
-    // Convert character to chunks
-    let chunks = character.to_chunks()?;
-
-    // Process each chunk
-    let mut stats = IngestionStats::new();
-    stats.total_chunks = chunks.len();
-
-    println!("🔄 Processing {} character data chunks...", chunks.len());
-
-    for (i, chunk) in chunks.iter().enumerate() {
-        println!("--------------------------------------------");
-        println!(
-            "🔄 Processing chunk {}/{}: {}...",
-            i + 1,
-            chunks.len(),
-            chunk.content.chars().take(30).collect::<String>()
-        );
-
-        if generate_embedding(&client, chunk, model).await? {
-            stats.successful_chunks += 1;
-        } else {
-            stats.failed_chunks += 1;
+    let mut any_valid_character = false;
+    for (line_num, line) in file_content.lines().enumerate() {
+        let line = line.trim();
+        if line.is_empty() {
+            continue;
         }
-
-        // Small delay between chunks
-        time::sleep(Duration::from_secs(2)).await;
+        let character_json: Value = match serde_json::from_str(line) {
+            Ok(val) => val,
+            Err(e) => {
+                println!("❌ Line {}: Failed to parse JSON: {}", line_num + 1, e);
+                total_failed_chunks += 1;
+                continue;
+            }
+        };
+        let character = match CharacterData::from_json(&character_json) {
+            Ok(c) => c,
+            Err(e) => {
+                println!("❌ Line {}: Failed to parse character data: {}", line_num + 1, e);
+                total_failed_chunks += 1;
+                continue;
+            }
+        };
+        if character.character_name.is_empty() {
+            println!("⚠️  Line {}: Skipping character with empty name.", line_num + 1);
+            total_failed_chunks += 1;
+            continue;
+        }
+        any_valid_character = true;
+        println!("\n🔍 Processing character [{}] on line {}", character.character_name, line_num + 1);
+        processed_characters += 1;
+        let max_embed_len = 250;
+        let chunks: Vec<CharacterChunk> = chunk_entity_fields(&character_json, max_embed_len)
+            .into_iter()
+            .map(|(label, content)| CharacterChunk { label, content })
+            .collect();
+        println!("🔄 Processing {} chunks for '{}'...", chunks.len(), character.character_name);
+        total_chunks += chunks.len();
+        for (i, chunk) in chunks.iter().enumerate() {
+            println!("--------------------------------------------");
+            println!(
+                "🔄 Processing chunk {}/{}: {}...",
+                i + 1,
+                chunks.len(),
+                chunk.content.chars().take(30).collect::<String>()
+            );
+            match generate_embedding(&client, chunk, model).await {
+                Ok(true) => {
+                    total_successful_chunks += 1;
+                }
+                Ok(false) | Err(_) => {
+                    total_failed_chunks += 1;
+                }
+            }
+            time::sleep(Duration::from_secs(2)).await;
+        }
+        total_characters += 1;
+    }
+    if !any_valid_character {
+        println!("❌ No valid character data found in file. Please check your JSONL input format.");
+        return Ok(());
     }
 
     // Print summary
-    let total_time = stats.elapsed_time();
+    let total_time = chrono::Local::now();
     println!("==================================================");
-    println!("✅ HARALD CHUNKED INGEST COMPLETE");
-    println!("📊 SUMMARY:");
-    println!("   Character: {}", character.character_name);
-    println!("   Successful chunks: {}", stats.successful_chunks);
-    println!("   Failed chunks: {}", stats.failed_chunks);
-    println!("   Total chunks: {}", stats.total_chunks);
-    println!("   Success rate: {:.1}%", stats.success_rate());
-    println!("   Total execution time: {:.2}s", total_time.as_secs_f64());
-    println!("------------------------------------------------");
-    println!("📋 Recommendations:");
-    println!("   1. Keep chunks under 250-300 characters for reliable embedding");
-    println!("   2. Process character data as separate attributes");
-    println!("   3. For larger chunks (500-600 chars), use standalone Ollama server");
-    println!("   4. The character limit may be system resource-related, not API-related");
-    println!("   5. For best performance, close the Ollama GUI app and run 'ollama serve'");
-    println!("==================================================");
-    println!(
-        "🕒 Finished at {}",
-        chrono::Local::now().format("%Y-%m-%d %H:%M:%S")
-    );
-
+    if processed_characters == 0 {
+        println!("❌ No valid character data found in file. Please check your JSONL input format.");
+    } else {
+        println!("✅ HARALD CHUNKED INGEST COMPLETE");
+        println!("📊 SUMMARY:");
+        println!("   Characters processed: {}", processed_characters);
+        println!("   Successful chunks: {}", total_successful_chunks);
+        println!("   Failed chunks: {}", total_failed_chunks);
+        println!("   Total chunks: {}", total_chunks);
+        let success_rate = if total_chunks > 0 {
+            (total_successful_chunks as f64 / total_chunks as f64) * 100.0
+        } else {
+            0.0
+        };
+        println!("   Success rate: {:.1}%", success_rate);
+        println!("------------------------------------------------");
+        println!("📋 Recommendations:");
+        println!("   1. Keep chunks under 250-300 characters for reliable embedding");
+        println!("   2. Process character data as separate attributes");
+        println!("   3. For larger chunks (500-600 chars), use standalone Ollama server");
+        println!("   4. The character limit may be system resource-related, not API-related");
+        println!("   5. For best performance, close the Ollama GUI app and run 'ollama serve'");
+        println!("==================================================");
+        println!("🕒 Finished at {}", total_time.format("%Y-%m-%d %H:%M:%S"));
+    }
     Ok(())
 }

@@ -116,9 +116,6 @@ struct EmbedResponse {
 ///     Ok(())
 /// }
 /// ```
-pub async fn embed(text: &str, max_tokens: usize, client: &Client) -> Result<Vec<f32>> {
-    embed_with_config(text, max_tokens, client, EmbedConfig::default()).await
-}
 
 /// Converts text to an embedding vector with custom configuration.
 ///
@@ -234,13 +231,6 @@ fn validate_embedding(embedding: &[f32]) -> Result<()> {
 ///
 /// # Returns
 /// Returns a configured `EmbedConfig` instance.
-pub fn create_config(model: &str, endpoint: &str) -> EmbedConfig {
-    EmbedConfig {
-        model: model.to_string(),
-        endpoint: endpoint.to_string(),
-        ..Default::default()
-    }
-}
 
 #[cfg(test)]
 mod tests {
