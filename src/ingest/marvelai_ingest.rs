@@ -174,7 +174,7 @@ async fn main() {
     }
     let total = arr.len();
     let chunk_size = (total as f64 / 5.0).ceil() as usize;
-    for i in 0..5 {
+    for i in 0..1 {
         let start = i * chunk_size;
         let end = ((i + 1) * chunk_size).min(total);
         if start >= end {
@@ -283,17 +283,22 @@ async fn main() {
 
         // Modular chunking for long fields before embedding
         let max_embed_len = 250;
-        let mut chunk_success = true;
+        let chunk_success = true;
         for obj in &chunk_json {
         for (field, chunk) in chunk_entity_fields(obj, max_embed_len) {
             if debug {
                 println!("    [DEBUG] Field '{}' chunk size: {} chars", field, chunk.chars().count());
+                println!("    [DEBUG] Chunk content for '{}.{}':\n{}", field, char_name, chunk);
             }
-            let mut last_error = String::new();
             let mut success = false;
+            // Use a fresh client for each request to avoid connection reuse issues
+            let embed_client = reqwest::Client::builder()
+                .timeout(std::time::Duration::from_secs(30))
+                .build()
+                .expect("Failed to build reqwest client");
             for attempt in 1..=max_retries {
                 println!("  Attempt {}/{}: embedding '{}.{}' ({} chars)", attempt, max_retries, field, char_name, chunk.chars().count());
-                let result = embed_with_config(&chunk, 100, &client, embed_config.clone()).await;
+                let result = embed_with_config(&chunk, 100, &embed_client, embed_config.clone()).await;
                 match result {
                     Ok(embedding) => {
                         println!("  ✅ Embedding vectors received successfully (dim: {})", embedding.len());
@@ -302,7 +307,24 @@ async fn main() {
                     }
                     Err(e) => {
                         println!("  ❌ Embedding request failed for '{}.{}': {}", field, char_name, e);
-                        last_error = format!("Embedding request failed: {}", e);
+                        // Print full error chain if available
+                        let mut source = e.source();
+                        while let Some(s) = source {
+                            println!("      [Error source] {}", s);
+                            source = s.source();
+                        }
+                        // Log failed chunk metadata for retry
+                        let log_path = marvel_dir.join("failed_chunks.log");
+                        let log_content = format!(
+                            "Failed embedding: field='{}', char_name='{}', chunk_size={}, attempt={}, error='{}', chunk='{}'\n",
+                            field, char_name, chunk.chars().count(), attempt, e, chunk.replace('\n', " ")
+                        );
+                        fs::OpenOptions::new()
+                            .create(true)
+                            .append(true)
+                            .open(&log_path)
+                            .and_then(|mut f| std::io::Write::write_all(&mut f, log_content.as_bytes()))
+                            .unwrap_or_else(|err| println!("      [Log error] Could not write to failed_chunks.log: {}", err));
                     }
                 }
                 let backoff = retry_delay * attempt;
@@ -312,16 +334,10 @@ async fn main() {
             if !success {
                 println!("  ❌ Failed to generate embeddings for '{}.{}' after {} attempts. Aborting further chunk processing.", field, char_name, max_retries);
                 failed_count += 1;
-                // Log failed chunk for later retry
-                let log_path = marvel_dir.join("failed_chunks.log");
-                let log_content = format!("{}: {}\n", field, last_error);
-                fs::write(&log_path, log_content).expect("Failed to write failed_chunks.log");
                 break;
             }
         }
-        if !chunk_success {
-            break;
-        }
+        // ...existing code...
         }
         if !chunk_success {
             break;

@@ -136,21 +136,46 @@ pub async fn embed(text: &str, max_tokens: usize, client: &Client) -> Result<Vec
 pub async fn embed_with_config(
     text: &str,
     _max_tokens: usize, // Currently unused but kept for API compatibility
-    client: &Client,
+    _client: &Client,
     config: EmbedConfig,
 ) -> Result<Vec<f32>> {
     validate_input(text)?;
 
-    let mut last_error = None;
+    let mut last_error: Option<anyhow::Error> = None;
 
     for attempt in 1..=config.max_retries {
-        match attempt_embedding(text, client, &config).await {
+        // Use a fresh client for each request to avoid connection reuse issues
+        let embed_client = reqwest::Client::builder()
+            .timeout(Duration::from_secs(config.timeout_secs))
+            .build()
+            .expect("Failed to build reqwest client");
+        match attempt_embedding(text, &embed_client, &config).await {
             Ok(embedding) => {
                 validate_embedding(&embedding)?;
                 return Ok(embedding);
             }
             Err(e) => {
-                last_error = Some(e);
+                eprintln!("❌ Embedding request failed: {}", e);
+                // Print full error chain if available
+                let mut source = e.source();
+                while let Some(s) = source {
+                    eprintln!("      [Error source] {}", s);
+                    source = s.source();
+                }
+                let error_string = format!("{}", e);
+                last_error = Some(e.into());
+                // Log failed chunk metadata for diagnostics and retry
+                let log_path = "failed_chunks.log";
+                let log_content = format!(
+                    "Failed embedding: attempt={}, error='{}', text='{}'\n",
+                    attempt, error_string, text.replace('\n', " ")
+                );
+                std::fs::OpenOptions::new()
+                    .create(true)
+                    .append(true)
+                    .open(&log_path)
+                    .and_then(|mut f| std::io::Write::write_all(&mut f, log_content.as_bytes()))
+                    .unwrap_or_else(|err| eprintln!("      [Log error] Could not write to failed_chunks.log: {}", err));
                 if attempt < config.max_retries {
                     // Exponential backoff: wait 2^attempt seconds
                     let delay = Duration::from_secs(2_u64.pow(attempt as u32));
@@ -160,7 +185,7 @@ pub async fn embed_with_config(
         }
     }
 
-    Err(last_error.unwrap_or_else(|| anyhow::anyhow!("All embedding attempts failed")))
+    Err(last_error.map(|e| e).unwrap_or_else(|| anyhow::anyhow!("All embedding attempts failed")))
 }
 
 /// Validates input text before processing.
