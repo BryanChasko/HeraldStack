@@ -286,55 +286,65 @@ async fn main() {
         let chunk_success = true;
         for obj in &chunk_json {
         for (field, chunk) in chunk_entity_fields(obj, max_embed_len) {
-            if debug {
-                println!("    [DEBUG] Field '{}' chunk size: {} chars", field, chunk.chars().count());
-                println!("    [DEBUG] Chunk content for '{}.{}':\n{}", field, char_name, chunk);
+            // Further split any chunk >200 chars into sub-chunks ≤200 chars
+            let mut sub_chunks = Vec::new();
+            let mut start = 0;
+            let chunk_len = chunk.chars().count();
+            let sub_chunk_size = 200;
+            while start < chunk_len {
+                let end = (start + sub_chunk_size).min(chunk_len);
+                let sub_chunk: String = chunk.chars().skip(start).take(end - start).collect();
+                sub_chunks.push(sub_chunk);
+                start = end;
             }
-            let mut success = false;
-            // Use a fresh client for each request to avoid connection reuse issues
-            let embed_client = reqwest::Client::builder()
-                .timeout(std::time::Duration::from_secs(30))
-                .build()
-                .expect("Failed to build reqwest client");
-            for attempt in 1..=max_retries {
-                println!("  Attempt {}/{}: embedding '{}.{}' ({} chars)", attempt, max_retries, field, char_name, chunk.chars().count());
-                let result = embed_with_config(&chunk, 100, &embed_client, embed_config.clone()).await;
-                match result {
-                    Ok(embedding) => {
-                        println!("  ✅ Embedding vectors received successfully (dim: {})", embedding.len());
-                        success = true;
-                        break;
-                    }
-                    Err(e) => {
-                        println!("  ❌ Embedding request failed for '{}.{}': {}", field, char_name, e);
-                        // Print full error chain if available
-                        let mut source = e.source();
-                        while let Some(s) = source {
-                            println!("      [Error source] {}", s);
-                            source = s.source();
-                        }
-                        // Log failed chunk metadata for retry
-                        let log_path = marvel_dir.join("failed_chunks.log");
-                        let log_content = format!(
-                            "Failed embedding: field='{}', char_name='{}', chunk_size={}, attempt={}, error='{}', chunk='{}'\n",
-                            field, char_name, chunk.chars().count(), attempt, e, chunk.replace('\n', " ")
-                        );
-                        fs::OpenOptions::new()
-                            .create(true)
-                            .append(true)
-                            .open(&log_path)
-                            .and_then(|mut f| std::io::Write::write_all(&mut f, log_content.as_bytes()))
-                            .unwrap_or_else(|err| println!("      [Log error] Could not write to failed_chunks.log: {}", err));
-                    }
+            for (sub_idx, sub_chunk) in sub_chunks.iter().enumerate() {
+                if debug {
+                    println!("    [DEBUG] Field '{}' sub-chunk {} size: {} chars", field, sub_idx + 1, sub_chunk.chars().count());
+                    println!("    [DEBUG] Sub-chunk content for '{}.{}[{}]':\n{}", field, char_name, sub_idx + 1, sub_chunk);
                 }
-                let backoff = retry_delay * attempt;
-                println!("      ⏳ Waiting {}s before next attempt...", backoff);
-                tokio::time::sleep(std::time::Duration::from_secs(backoff as u64)).await;
-            }
-            if !success {
-                println!("  ❌ Failed to generate embeddings for '{}.{}' after {} attempts. Aborting further chunk processing.", field, char_name, max_retries);
-                failed_count += 1;
-                break;
+                let mut success = false;
+                let embed_client = reqwest::Client::builder()
+                    .timeout(std::time::Duration::from_secs(120))
+                    .build()
+                    .expect("Failed to build reqwest client");
+                for attempt in 1..=max_retries {
+                    println!("  Attempt {}/{}: embedding '{}.{}[{}]' ({} chars)", attempt, max_retries, field, char_name, sub_idx + 1, sub_chunk.chars().count());
+                    let result = embed_with_config(sub_chunk, 100, &embed_client, embed_config.clone()).await;
+                    match result {
+                        Ok(embedding) => {
+                            println!("  ✅ Embedding vectors received successfully (dim: {})", embedding.len());
+                            success = true;
+                            break;
+                        }
+                        Err(e) => {
+                            println!("  ❌ Embedding request failed for '{}.{}[{}]': {}", field, char_name, sub_idx + 1, e);
+                            let mut source = e.source();
+                            while let Some(s) = source {
+                                println!("      [Error source] {}", s);
+                                source = s.source();
+                            }
+                            let log_path = marvel_dir.join("failed_chunks.log");
+                            let log_content = format!(
+                                "Failed embedding: field='{}', char_name='{}', sub_chunk_idx={}, chunk_size={}, attempt={}, error='{}', chunk='{}'\n",
+                                field, char_name, sub_idx + 1, sub_chunk.chars().count(), attempt, e, sub_chunk.replace('\n', " ")
+                            );
+                            fs::OpenOptions::new()
+                                .create(true)
+                                .append(true)
+                                .open(&log_path)
+                                .and_then(|mut f| std::io::Write::write_all(&mut f, log_content.as_bytes()))
+                                .unwrap_or_else(|err| println!("      [Log error] Could not write to failed_chunks.log: {}", err));
+                        }
+                    }
+                    let backoff = retry_delay * attempt;
+                    println!("      ⏳ Waiting {}s before next attempt...", backoff);
+                    tokio::time::sleep(std::time::Duration::from_secs(backoff as u64)).await;
+                }
+                if !success {
+                    println!("  ❌ Failed to generate embeddings for '{}.{}[{}]' after {} attempts. Aborting further chunk processing.", field, char_name, sub_idx + 1, max_retries);
+                    failed_count += 1;
+                    break;
+                }
             }
         }
         // ...existing code...

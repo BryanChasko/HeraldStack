@@ -354,18 +354,71 @@ async fn process_single_file_for_embedding(
     config: &IngestConfig,
     client: &reqwest::Client,
 ) -> Result<Vec<f32>> {
-    // Read and truncate file content
+    // Only process .json or .jsonl files
+    let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("");
+    if ext != "json" && ext != "jsonl" {
+        return Err(anyhow::anyhow!("Only .json and .jsonl files are supported for ingestion: {}", path.display()));
+    }
+
     let content = std::fs::read_to_string(path)
         .with_context(|| format!("Failed to read file: {}", path.display()))?;
 
-    let truncated_content = truncate_content(&content, config.max_chars);
+    // Parse as JSON array (or linewise for JSONL)
+    let objects: Vec<serde_json::Value> = if ext == "jsonl" {
+        content
+            .lines()
+            .filter_map(|line| serde_json::from_str(line).ok())
+            .collect()
+    } else {
+        match serde_json::from_str(&content) {
+            Ok(serde_json::Value::Array(arr)) => arr,
+            Ok(obj) => vec![obj],
+            Err(e) => return Err(anyhow::anyhow!("Failed to parse JSON: {}", e)),
+        }
+    };
 
-    // Generate embedding vector
-    let embedding = embed::embed(truncated_content, config.max_tokens, client)
-        .await
-        .with_context(|| format!("Failed to generate embedding for file: {}", path.display()))?;
-
-    Ok(embedding)
+    // For each object, iterate fields and chunk
+    let mut indexed_embeddings = Vec::new();
+    let mut total_sub_chunks = 0;
+    for (obj_idx, obj) in objects.iter().enumerate() {
+        if let Some(map) = obj.as_object() {
+            for (field, value) in map.iter() {
+                let field_str = match value {
+                    serde_json::Value::String(s) => s.clone(),
+                    _ => value.to_string(),
+                };
+                // Split into sub-chunks ≤200 chars
+                let mut start = 0;
+                let chunk_len = field_str.chars().count();
+                let sub_chunk_size = 200;
+                let mut field_sub_chunks = 0;
+                while start < chunk_len {
+                    let end = (start + sub_chunk_size).min(chunk_len);
+                    let sub_chunk: String = field_str.chars().skip(start).take(end - start).collect();
+                    // Embed each sub-chunk
+                    let embedding = embed::embed(&sub_chunk, config.max_tokens, client)
+                        .await
+                        .with_context(|| format!("Failed to embed field '{}', chunk {}-{} in file: {}", field, start, end, path.display()))?;
+                    // Store embedding with metadata
+                    indexed_embeddings.push((obj_idx, field.clone(), start, end, embedding));
+                    start = end;
+                    field_sub_chunks += 1;
+                }
+                if field_sub_chunks > 0 {
+                    println!("[DEBUG] Field '{}' produced {} sub-chunks for file: {}", field, field_sub_chunks, path.display());
+                }
+                total_sub_chunks += field_sub_chunks;
+            }
+        }
+    }
+    println!("[DEBUG] Total sub-chunks embedded for file {}: {}", path.display(), total_sub_chunks);
+    println!("[DEBUG] Total embeddings indexed: {}", indexed_embeddings.len());
+    // Instead of returning a single embedding, return an error if none found
+    if indexed_embeddings.is_empty() {
+        return Err(anyhow::anyhow!("No embeddings generated for file: {}", path.display()));
+    }
+    // For compatibility, return the first embedding (could be refactored to index all)
+    Ok(indexed_embeddings[0].4.clone())
 }
 
 /// Processes a single file and adds it to the index.
