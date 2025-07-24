@@ -37,7 +37,7 @@ automated tools:
 
 ```bash
 # Fix JSON formatting and validation issues
-./target/release/check_json --fix
+./src/target/release/check_json --fix
 
 # Fix Rust formatting, run clippy, and tests
 ./scripts/validation/check-rust.sh
@@ -69,7 +69,7 @@ In our project, binaries can be found in two different locations:
 **Secondary location**: `./target/release/`
 
 - Some newer tools are here (check_json, status, etc.)
-- Example: `./target/release/check_json`
+- Example: `./src/target/release/check_json`
 
 You need to check both locations when looking for tools. Always refer to
 specific documentation for each tool to find its correct path.
@@ -82,13 +82,13 @@ directory:
 ./src/target/release/format_md path/to/your/file.md
 
 # Check and fix JSON files (wrapper around format_json)
-./target/release/check_json --fix
+./src/target/release/check_json --fix
 
 # Validate naming conventions across the codebase
 ./src/target/release/validate_naming --fix --verbose
 
 # Check system status (Ollama services, models, etc)
-./target/release/status
+./src/target/release/status
 ```
 
 **IMPORTANT:** Always run these tools from the project root directory to ensure

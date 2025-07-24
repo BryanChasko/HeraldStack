@@ -7,10 +7,22 @@
 
 ## Core Vision
 
-HeraldStack is an ambient intelligence system that integrates memory, emotion,
-and modular execution across a trusted cohort of AI entities to restore
-momentum, anchor decisions, and evolve alongside Bryan's ongoing personal and
-professional journey.
+HeraldStack is an am## Directory Structure Overview
+
+For a detailed, canonical description of the project's directory structure, see:
+
+- [docs/DETAILED.md](docs/DETAILED.md) – **Directory Structure and Naming Best
+  Practices** (includes a `tree` overview and rationale)
+- [docs/naming-conventions.md](docs/naming-conventions.md) – **Directory and
+  file naming conventions**
+- [docs/DEVELOPMENT-PRINCIPLES.md](docs/DEVELOPMENT-PRINCIPLES.md) –
+  **Development principles and migration history**
+
+Historical migration documents have been moved to
+[docs/migration/archive/](docs/migration/archive/) for reference.gence system
+that integrates memory, emotion, and modular execution across a trusted cohort
+of AI entities to restore momentum, anchor decisions, and evolve alongside
+Bryan's ongoing personal and professional journey.
 
 ## 🚨 Critical Development Principles
 
@@ -36,9 +48,17 @@ The following should remain as shell scripts:
 Before manually fixing linting/formatting issues, run our automated tools:
 
 ```bash
-./scripts/validation/check-json.sh     # Fix JSON issues
-./scripts/validation/check-rust.sh     # Fix Rust issues
-./src/target/release/format_md      # Fix Markdown issues
+# Fix JSON formatting and validation issues
+./src/target/release/check_json --fix
+
+# Fix Rust formatting, run clippy, and tests
+./scripts/validation/check-rust.sh
+
+# Fix Markdown formatting (line length, spacing, etc.)
+./src/target/release/format_md
+
+# Check and optionally fix naming convention problems
+./src/target/release/validate_naming --fix --verbose
 ```
 
 **See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for complete development
@@ -94,13 +114,48 @@ embedding utilities):
 # Build all Rust binaries
 cd src && cargo build --release --features cli
 
-# Available binaries:
+# Available binaries in src/target/release/:
+# - check_json           (JSON formatting and validation wrapper)
 # - format_json          (JSON formatting and validation)
-# - validate_json_schema  (Schema validation and generation)
+# - validate_json_schema (Schema validation and generation)
 # - ingest_chunked       (Character-based data ingestion)
 # - embedding_tool       (Embedding generation and testing)
 # - text_chunker         (Text processing utilities)
+# - format_md            (Markdown formatting)
+# - validate_naming      (Naming convention validation)
+# - status               (System status checking)
+# - harald_ingest        (Main ingestion tool)
+# - marvelai_ingest      (Marvel-specific ingestion)
 ```
+
+### Using Rust Binaries
+
+All binaries are located in `src/target/release/` and should be run from the
+project root:
+
+```bash
+# Format and validate JSON files
+./src/target/release/check_json --fix
+
+# Format Markdown files
+./src/target/release/format_md path/to/file.md
+
+# Validate naming conventions
+./src/target/release/validate_naming --fix --verbose
+
+# Check system status (Ollama services, models, etc.)
+./src/target/release/status
+
+# Process text for embedding
+./src/target/release/text_chunker --input file.txt --mode char --size 250
+
+# Run any tool with --help to see available options
+./src/target/release/format_json --help
+```
+
+**Note**: These Rust binaries have replaced the previous shell scripts for
+application logic. The old shell scripts in `scripts/validation/` have been
+migrated to these type-safe, performant Rust implementations.
 
 ### Deployment
 
@@ -130,6 +185,8 @@ handling.
 
 ## Development Standards
 
+- [Development Principles](docs/DEVELOPMENT-PRINCIPLES.md) - Core development
+  principles and migration guidelines
 - [Naming Conventions](docs/naming-conventions.md) - Standards for files and
   directories
 - **Build & Deploy**: Use `./scripts/deploy/deploy.sh` for deployment (see
@@ -140,7 +197,6 @@ handling.
   Rust
 - [Project Structure](docs/migration/RECOMMENDED-STRUCTURE.md) - Recommended
   organization
-- [Migration Documentation](docs/migration/) - Shell-to-Rust migration details
 - **Ingestion/Embedding Architecture:** All ingestion and embedding logic must
   follow the
   [Modular Ingest Refactor Plan](docs/migration/INGEST-MIGRATION-MODULAR-PLAN.md).
