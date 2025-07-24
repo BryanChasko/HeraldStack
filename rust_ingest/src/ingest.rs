@@ -1,16 +1,25 @@
-//! File ingestion module for semantic search indexing.
-//!
-//! This module handles the ingestion of files into a searchable vector index.
-//! It processes files, generates embeddings, and builds an HNSW index for semantic search
-//! using the HNSW algorithm for efficient nearest neighbor search in high-dimensional spaces.
-//! This creates a searchable database of file contents based on their semantic meaning.
-//!
-//! # Module Structure
-//! In Rust, this .rs file defines a module named "ingest":
-//! - If main.rs/lib.rs contains `mod ingest;`, Rust loads this file as the ingest module
-//! - Functions here are accessed as `ingest::run()` from other modules
-//! - This is a "module source file" - a unit of compilation within our crate
-//! - Part of the flat module style (modern) vs ingest/mod.rs (legacy)
+// Restore truncate_content for tests
+#[allow(dead_code)]
+fn _truncate_content(content: &str, max_chars: usize) -> &str {
+    if content.len() <= max_chars {
+        content
+    } else {
+        &content[..max_chars]
+    }
+}
+// File ingestion module for semantic search indexing.
+//
+// This module handles the ingestion of files into a searchable vector index.
+// It processes files, generates embeddings, and builds an HNSW index for semantic search
+// using the HNSW algorithm for efficient nearest neighbor search in high-dimensional spaces.
+// This creates a searchable database of file contents based on their semantic meaning.
+//
+// # Module Structure
+// In Rust, this .rs file defines a module named "ingest":
+// - If main.rs/lib.rs contains `mod ingest;`, Rust loads this file as the ingest module
+// - Functions here are accessed as `ingest::run()` from other modules
+// - This is a "module source file" - a unit of compilation within our crate
+// - Part of the flat module style (modern) vs ingest/mod.rs (legacy)
 
 use anyhow::{Context, Result};
 use hnsw_rs::prelude::*;
@@ -18,7 +27,7 @@ use serde_json::json;
 use std::{fs::File, path::PathBuf};
 use walkdir::WalkDir;
 
-use crate::embed;
+
 
 /// Directories to skip during file traversal.
 ///
@@ -38,11 +47,9 @@ const SKIP_DIRS: &[&str] = &[
     "node_modules",
     "build",
     "dist",
-    "docs/api",
     "rust_ingest/target",
     "rust_ingest/Cargo.lock",
 ];
-
 /// Maximum number of characters to read from each file for embedding.
 ///
 /// This limit serves multiple purposes:
@@ -357,9 +364,9 @@ fn is_supported_file(path: &std::path::Path) -> bool {
 /// Returns error if file reading or embedding generation fails.
 async fn process_single_file_for_embedding(
     path: &std::path::Path,
-    config: &IngestConfig,
-    client: &reqwest::Client,
-) -> Result<Vec<f32>> {
+    _config: &IngestConfig,
+    _client: &reqwest::Client,
+) -> Result<Vec<(usize, String, usize, usize, Vec<f32>)>> {
     // Only process .json or .jsonl files
     let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("");
     if ext != "json" && ext != "jsonl" {
@@ -386,6 +393,7 @@ async fn process_single_file_for_embedding(
     // For each object, iterate fields and chunk
     let mut indexed_embeddings = Vec::new();
     let mut total_sub_chunks = 0;
+    let mut missing_embeddings = Vec::new();
     for (obj_idx, obj) in objects.iter().enumerate() {
         if let Some(map) = obj.as_object() {
             for (field, value) in map.iter() {
@@ -400,13 +408,33 @@ async fn process_single_file_for_embedding(
                 let mut field_sub_chunks = 0;
                 while start < chunk_len {
                     let end = (start + sub_chunk_size).min(chunk_len);
-                    let sub_chunk: String = field_str.chars().skip(start).take(end - start).collect();
-                    // Embed each sub-chunk
-                    let embedding = embed::embed(&sub_chunk, config.max_tokens, client)
-                        .await
-                        .with_context(|| format!("Failed to embed field '{}', chunk {}-{} in file: {}", field, start, end, path.display()))?;
-                    // Store embedding with metadata
-                    indexed_embeddings.push((obj_idx, field.clone(), start, end, embedding));
+                    let _sub_chunk: String = field_str.chars().skip(start).take(end - start).collect();
+                    let chunk_dir = path.parent().unwrap_or_else(|| std::path::Path::new("."));
+                    let emb_filename = format!("{}.{}.{}.{}-{}.emb.json",
+                        path.file_stem().unwrap_or_default().to_string_lossy(),
+                        obj_idx, field, start, end);
+                    let emb_path = chunk_dir.join(&emb_filename);
+                    match std::fs::read_to_string(&emb_path) {
+                        Ok(emb_str) => match serde_json::from_str::<Vec<f32>>(&emb_str) {
+                            Ok(embedding) => {
+                                if embedding.is_empty() {
+                                    println!("[ERROR] Embedding file {:?} is empty!", emb_path);
+                                    missing_embeddings.push((field.clone(), obj_idx, start, end, emb_path.display().to_string()));
+                                } else {
+                                    println!("[DEBUG] Loaded embedding for '{}', obj_idx {}, range {}-{} from {:?}", field, obj_idx, start, end, emb_path);
+                                    indexed_embeddings.push((obj_idx, field.clone(), start, end, embedding));
+                                }
+                            }
+                            Err(e) => {
+                                println!("[ERROR] Failed to parse embedding file {:?}: {}", emb_path, e);
+                                missing_embeddings.push((field.clone(), obj_idx, start, end, emb_path.display().to_string()));
+                            }
+                        },
+                        Err(e) => {
+                            println!("[ERROR] Failed to read embedding file {:?}: {}", emb_path, e);
+                            missing_embeddings.push((field.clone(), obj_idx, start, end, emb_path.display().to_string()));
+                        }
+                    }
                     start = end;
                     field_sub_chunks += 1;
                 }
@@ -417,61 +445,24 @@ async fn process_single_file_for_embedding(
             }
         }
     }
-    println!("[DEBUG] Total sub-chunks embedded for file {}: {}", path.display(), total_sub_chunks);
+    if !missing_embeddings.is_empty() {
+        println!("\n[ERROR] The following embeddings were missing or invalid:");
+        for (field, obj_idx, start, end, emb_path) in &missing_embeddings {
+            println!("  - Field '{}', obj_idx {}, range {}-{}, file: {}", field, obj_idx, start, end, emb_path);
+        }
+        return Err(anyhow::anyhow!("One or more required embedding files were missing or invalid. See errors above."));
+    }
+    println!("[DEBUG] Total sub-chunks indexed for file {}: {}", path.display(), total_sub_chunks);
     println!("[DEBUG] Total embeddings indexed: {}", indexed_embeddings.len());
-    // Instead of returning a single embedding, return all indexed embeddings
     if indexed_embeddings.is_empty() {
-        return Err(anyhow::anyhow!("No embeddings generated for file: {}", path.display()));
+        return Err(anyhow::anyhow!("No embeddings indexed for file: {}", path.display()));
     }
     Ok(indexed_embeddings.clone())
 }
 
-/// Processes a single file and adds it to the index.
-///
-/// # Arguments
-/// * `path` - Path to the file being processed
-/// * `config` - Configuration settings for ingestion
-/// * `client` - HTTP client for embedding API requests
-/// * `index` - HNSW index to insert embeddings into
-/// * `file_metadata` - Collection of file paths to track processed files
-/// * `file_id` - Unique identifier for this file in the index
-///
-/// # Returns
-/// Success if the file was processed and added to the index.
-///
-/// # Errors
-/// Returns error if file reading or embedding generation fails.
-///
-#[allow(dead_code)]
-/// @deprecated Use the parallel processing pipeline instead
-async fn process_single_file(
-    path: &std::path::Path,
-    config: &IngestConfig,
-    client: &reqwest::Client,
-    index: &Hnsw<'_, f32, DistCosine>,
-    file_metadata: &mut Vec<PathBuf>,
-    file_id: usize,
-) -> Result<()> {
-    // Generate embedding
-    let embedding = process_single_file_for_embedding(path, config, client).await?;
-
-    // Insert into index
-    index.insert((embedding.as_slice(), file_id));
-
-    // Store file path metadata
-    file_metadata.push(path.to_path_buf());
-
-    Ok(())
-}
 
 /// Truncates content to the specified maximum length.
-fn truncate_content(content: &str, max_chars: usize) -> &str {
-    if content.len() <= max_chars {
-        content
-    } else {
-        &content[..max_chars]
-    }
-}
+
 
 /// Persists the HNSW index and file metadata to disk.
 fn persist_index_data(

@@ -1,5 +1,9 @@
 # Ollama API Embedding Limits
 
+**Created**: July 2025  
+**Last Updated**: July 24, 2025  
+**Version**: 1.0
+
 ## Overview
 
 This document outlines key findings about Ollama API embedding limits and

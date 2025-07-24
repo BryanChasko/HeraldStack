@@ -18,7 +18,7 @@ _exclusively for Bryan Chasko_. It integrates memory, emotion, and modular
 execution across a trusted cohort of entities to restore momentum, anchor
 decisions, and evolve alongside Bryan's ongoing personal and professional arcs.
 
-### Core Components:
+### Core Components
 
 - **🦊 HARALD** – The default entity. Serves as an emotional mirror, decision
   anchor, and continuity manager—especially effective during moments of
@@ -175,7 +175,9 @@ relationships, as well as routines and behavioral patterns.
 With explicit consent, HeraldStack observes and logs sleep patterns,
 conversations (when dual-consent is recorded), random thoughts, and important
 insights. All thoughts are automatically tagged and categorized (e.g., #idea,
-#todo, #relationship, #coding), with full access to raw logs for auditing,
+
+# todo, #relationship, #coding), with full access to raw logs for auditing
+
 tuning, or retraining.
 
 ### Calendar Intelligence
@@ -294,22 +296,54 @@ each component.
   and [GitHub repository](https://github.com/jean-pierreBoth/hnswlib-rs) for
   details and updates.
 
-herald-stack/ # Project root (kebab-case) . ├── ai-entities │ ├── ellow.md │ ├──
-entity-registry.json │ ├── harald.md │ ├── kade-vox.md │ ├── liora.md │ ├──
-myrren.md │ ├── Orin.md │ ├── solan.md │ └── stratia.md ├── docs │ ├──
-architecture-decisions │ │ └── 001-entity-cohort-design.md │ ├── changelog.md │
-├── roadmap.md │ └── weekly-reviews ├── infrastructure │ ├── aws-stack.md │ ├──
-cost-monitoring.md │ ├── deployment-guide.md │ └── pinecone-schemas.md ├──
-integration-guides │ ├── agentic-orchestration.md │ ├──
+HARALD/ # Project root (kebab-case) ├── ai-entities/ # AI entity
+definitions and metadata │ ├── entity-registry.json # Entity registry (all
+entities) │ ├── harald.md # Entity: HARALD │ ├── stratia.md # Entity: Stratia │
+├── myrren.md # Entity: Myrren │ ├── liora.md # Entity: Liora │ ├──
+kade-vox.md # Entity: Kade Vox │ ├── solan.md # Entity: Solan │ ├── ellow.md #
+Entity: Ellow │ ├── orin.md # Entity: Orin │ └── prompts/ # Prompt templates for
+entities ├── config/ # Schemas, ethics, and model configs │ ├── CONFIG.md #
+Config documentation │ ├── ethics/ # Ethical guidelines (e.g.,
+LawsOfRobotics.json) │ │ └── LawsOfRobotics.json │ ├── models/ # Model
+configuration files │ └── schemas/ # Data schemas for validation ├── data/ #
+Vector store registry, ingested data │ ├── vector-stores-registry.json │ └──
+schemas/ # Data schemas (if present) ├── datasets/ # Source datasets for
+ingestion/embedding ├── docs/ # System, migration, and vector search docs │ ├──
+CONTRIBUTING.md # Contribution guidelines │ ├── DETAILED.md # This file
+(detailed docs) │ ├── DEVELOPMENT-PRINCIPLES.md │ ├── naming-conventions.md │
+├── migration/ # Shell-to-Rust migration plans │ │ ├── RECOMMENDED-STRUCTURE.md
+│ │ ├── DIRECTORY-REORGANIZATION.md │ │ └── IMPLEMENTATION-PLAN.md │ └──
+vector-search/ # Vector search and embedding docs │ ├──
+character-based-chunking.md │ ├── ollama-embedding-limits.md │ └──
+jsonl-ingestion.md ├── infrastructure/ # Cloud and deployment infrastructure
+docs │ ├── aws-stack.md │ ├── cost-monitoring.md │ ├── deployment-guide.md │ └──
+pinecone-schemas.md ├── integration-guides/ # Integration docs for external
+APIs/services │ ├── agentic-orchestration.md │ ├──
 amazon-voice-interoperability.md │ ├── anthropic.md │ ├── aws.md │ ├──
 bedrock.md │ ├── cohere.md │ ├── google.md │ ├── griptape.md │ ├── haystack.md │
 ├── hugging-face.md │ ├── microsoft.md │ ├── open-ai.md │ └── pinecone.md ├──
-LawsOfRobotics.json ├── memory-schemas │ ├── conversation-metadata.json │ ├──
+logs/ # Ingestion and embedding logs │ ├── embedding*size_test*_.log │ ├──
+ingest*log*_.log │ └── embedding_api/ # API-specific logs ├── memory-schemas/ #
+Schemas for memory and context │ ├── conversation-metadata.json │ ├──
 emotion-vectors.json │ ├── entity-context.json │ └── narrative-arc.json ├──
-personality-archetypes │ ├── mythological │ │ ├── celtic │ │ ├──
-human-inspired.md │ │ └── norse │ │ ├── Heralds.json │ │ └── heralds.md │ └──
-pop-culture │ ├── bojack-horseman │ │ └── Bojack.json │ ├── literary │ ├──
-marvel │ │ ├── MarvelAIs.json │ │ ├── pop-culture-ai-references.md │ │ └──
-VictorMancha.json │ └── marvel.md ├── README.md └── workflows ├──
-consent-logging.md ├── entity-routing.md ├── task-orchestration.md └──
-weekly-review.md
+personality-archetypes/ # Archetype definitions and docs │ ├── Heralds.json │
+├── heralds.md │ ├── mythological/ │ │ ├── celtic/ │ │ ├── norse/ │ │ └──
+human-inspired.md │ └── pop-culture/ │ ├── bojack-horseman/ │ │ └── Bojack.json
+│ ├── literary/ │ └── marvel/ │ ├── MarvelAIs.json │ ├──
+pop-culture-ai-references.md │ └── VictorMancha.json ├── rust_ingest/ # Rust CLI
+tools for ingestion/embedding │ ├── Cargo.toml │ ├── Cargo.lock │ ├──
+rustREADME.md │ ├── src/ │ └── target/ ├── scripts/ # Shell scripts for
+deployment/validation only │ ├── build_rust_tools.sh │ └── validation/ │ ├──
+check-json.sh │ └── check-rust.sh │ └── deploy/ │ └── deploy.sh ├── src/ # Core
+Rust code (all app logic) │ ├── ingest/ # Ingestion pipeline logic │ │ ├──
+marvelai_ingest.rs # Domain-specific ingest wrapper │ │ ├── ingest.rs # Core
+ingest logic │ │ ├── chunking_utils.rs # Character-based chunking │ │ ├──
+embedding.rs # Embedding API integration │ │ └── ... │ ├── utils/ │ │ ├──
+json_tools/ │ │ │ ├── format_json.rs │ │ │ ├── validate_json_schema.rs │ │ │ └──
+... │ │ └── ... │ └── target/ # Rust build output (release/debug) ├── target/ #
+Rust build output (workspace root) ├── tests/ # Test fixtures and test code │
+├── fixtures/ │ │ └── FIXTURES.md │ ├── ingest_tests.rs # Ingestion/embedding
+tests │ ├── utils_tests.rs # Utility function tests │ └── ... ├── workflows/ #
+CI/CD and automation configs │ ├── rust.yml # Rust build/test workflow │ ├──
+lint.yml # Linting/formatting workflow │ └── ... ├── README.md # Project
+overview, build, and dev standards └── Cargo.toml # Rust workspace config (root)

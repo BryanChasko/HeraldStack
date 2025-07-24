@@ -1,5 +1,9 @@
 # Character-Based Text Chunking for Optimal Embeddings
 
+**Created**: July 2025  
+**Last Updated**: July 24, 2025  
+**Version**: 1.0
+
 ## Overview
 
 Character-based text chunking is a method for dividing text into smaller units

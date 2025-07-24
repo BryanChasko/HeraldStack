@@ -1,5 +1,9 @@
 # HARALD Project Naming Conventions
 
+**Created**: July 2025  
+**Last Updated**: July 24, 2025  
+**Version**: 1.0
+
 This document defines the naming conventions for directories and files in the
 HARALD project, with specific guidelines for Rust, Markdown, and JSON files.
 Following these conventions ensures consistency, readability, and adheres to

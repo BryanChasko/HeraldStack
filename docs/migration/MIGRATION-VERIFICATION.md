@@ -43,7 +43,8 @@ The following shell scripts have been migrated to Rust:
 - `test_embedding_size.sh` → `src/core/embedding/embedding_bin.rs`
 
 See the full migration status in `docs/migration/INGEST-MIGRATION.md` and the
-cleanup plan in `docs/migration/SCRIPT-CLEANUP-PLAN.md`.
+cleanup plan in `docs/DEVELOPMENT-PRINCIPLES.md` (Historical details:
+`docs/migration/archive/SCRIPT-CLEANUP-PLAN.md`).
 
 ## Extending the Verification Process
 

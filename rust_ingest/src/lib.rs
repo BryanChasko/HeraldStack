@@ -10,5 +10,5 @@ pub mod query;
 
 // Re-export key functionality for convenience
 pub use crate::embed::embed;
-pub use crate::ingest::run as ingest_run;
+pub use crate::ingest::run_with_config as ingest_run;
 pub use crate::query::run as query_run;

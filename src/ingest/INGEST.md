@@ -1,8 +1,10 @@
 # HARALD Ingest Module
 
-This directory contains the Rust implementation of the HARALD ingestion
-pipeline, migrated from the previous `rust_ingest` directory as part of our
-organizational improvements.
+This directory contains thin wrappers and domain-specific entry points for the HARALD ingestion pipeline.
+**All core, modular ingest, chunking, and embedding logic now lives in the `rust_ingest` directory.**
+The code here delegates to the modular ingest library in `../rust_ingest`.
+
+> **Note:** The previous monolithic ingest logic was migrated from `rust_ingest` to `src/ingest/` as part of an earlier reorganization, but the canonical, reusable ingest implementation is now maintained in `rust_ingest` for all pipelines.
 
 ## Important Notes & Best Practices
 

@@ -19,16 +19,20 @@ to `src/ingest/`.
 
 ## Next Steps
 
-1. Run tests on the migrated code:
+1. See
+   [INGEST-MIGRATION-MODULAR-PLAN.md](docs/migration/INGEST-MIGRATION-MODULAR-PLAN.md)
+   for the current step-by-step plan to refactor to a modular, reusable
+   ingestion architecture.
+
+2. Run tests on the migrated code:
 
    ```bash
    ./scripts/dev/build-ingest.sh --test
    ```
-````
 
-2. Update any scripts that referenced the old `rust_ingest` directory
+3. Update any scripts that referenced the old `rust_ingest` directory
 
-3. After successful validation, deprecated the old `rust_ingest/` directory:
+4. After successful validation, deprecate the old `rust_ingest/` directory:
 
    ```bash
    # After verification that everything works
@@ -226,7 +230,8 @@ type-safe Rust implementations.
 
 📝 **Created cleanup documentation**
 
-- Migration tracking document at `docs/migration/SCRIPT-CLEANUP-PLAN.md`
+- Migration tracking document at `docs/DEVELOPMENT-PRINCIPLES.md` (Historical
+  details: `docs/migration/archive/`)
 - Implementation timeline and roadmap
 - Testing and verification strategies
 
@@ -257,7 +262,8 @@ The following scripts are still pending migration to Rust:
 ### Script Removal Protocol
 
 For completed migrations, follow the cleanup process documented in
-`docs/migration/SCRIPT-CLEANUP-PLAN.md`:
+`docs/DEVELOPMENT-PRINCIPLES.md`: (Historical details:
+`docs/migration/archive/SCRIPT-CLEANUP-PLAN.md`):
 
 1. **Testing Phase**: Complete functional equivalence, performance, edge case,
    and integration testing
@@ -282,3 +288,4 @@ During the transition period:
 ```
 
 ```
+````

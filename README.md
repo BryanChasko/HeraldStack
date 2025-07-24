@@ -140,7 +140,13 @@ handling.
   Rust
 - [Project Structure](docs/migration/RECOMMENDED-STRUCTURE.md) - Recommended
   organization
-- [Migration Documentation](docs/migration/) - Detailed migration information
+- [Migration Documentation](docs/migration/) - Shell-to-Rust migration details
+- **Ingestion/Embedding Architecture:** All ingestion and embedding logic must
+  follow the
+  [Modular Ingest Refactor Plan](docs/migration/INGEST-MIGRATION-MODULAR-PLAN.md).
+  This plan defines the canonical, reusable ingest library and the pattern for
+  domain-specific wrappers (e.g., marvelai_ingest.rs). All new pipelines and
+  refactors must use this architecture and update documentation accordingly.
 
 ## Operating Model
 
@@ -159,6 +165,9 @@ pragmatic execution, and narrative continuity.
 - Workflows
 - [JSONL Format for Vector Embedding](docs/vector-search/jsonl-ingestion.md)
 - [Migration Documentation](docs/migration/) - Shell-to-Rust migration details
+- [Modular Ingest Refactor Plan](docs/migration/INGEST-MIGRATION-MODULAR-PLAN.md)
+  – Step-by-step plan for refactoring to a reusable, component-based ingestion
+  architecture
 
 ## Ethics & Consent
 
@@ -175,9 +184,19 @@ guidelines including those defined in
 - **Test Data**: Test fixtures are available in `tests/fixtures/` (see
   [FIXTURES.md](tests/fixtures/FIXTURES.md) for details)
 
-## Further Information
+## Directory Structure Overview
 
-See docs/DETAILED.md for more information.
+For a detailed, canonical description of the project’s directory structure, see:
+
+- [docs/DETAILED.md](docs/DETAILED.md) – **Directory Structure and Naming Best
+  Practices** (includes a `tree` overview and rationale)
+- [docs/naming-conventions.md](docs/naming-conventions.md) – **Directory and
+  file naming conventions**
+
+Other structure-related documents in `docs/migration/` (such as
+`RECOMMENDED-STRUCTURE.md`, `DIRECTORY-REORGANIZATION.md`, and
+`IMPLEMENTATION-PLAN.md`) are project planning artifacts and will be moved to a
+`docs/project-planning/` subdirectory.
 
 ---
 

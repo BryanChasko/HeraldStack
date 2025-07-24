@@ -1,5 +1,10 @@
 # Recommended Project Structure
 
+**Created**: July 2025  
+**Last Updated**: July 24, 2025  
+**Version**: 1.0  
+**Status**: Planning Document (will be moved to docs/project-planning/)
+
 This document outlines recommended organizational improvements for the HARALD
 project based on developer best practices.
 

@@ -14,7 +14,7 @@ HARALD project directory structure.
 | `GITHUB.md`                  | Root              | `docs/`           |
 | `IMPLEMENTATION-PLAN.md`     | Root              | `docs/migration/` |
 | `RECOMMENDED-STRUCTURE.md`   | Root              | `docs/migration/` |
-| `SCRIPT-MIGRATION.md`        | Root              | `docs/migration/` |
+| `SCRIPT-MIGRATION.md`        | Root              | `docs/migration/archive/` |
 | `INGEST-MIGRATION.md`        | Root              | `docs/migration/` |
 
 ## README Updates

@@ -1,5 +1,9 @@
 # Contributing to HARALD
 
+**Created**: July 2025  
+**Last Updated**: July 24, 2025  
+**Version**: 1.1
+
 This document provides practical guidance for contributing to the HARALD
 project. For high-level development philosophy and principles, see
 [DEVELOPMENT-PRINCIPLES.md](DEVELOPMENT-PRINCIPLES.md).
@@ -16,7 +20,15 @@ Before contributing, please familiarize yourself with our
 - **Automation over manual work** - Use and extend our automated tools
 
 For the complete migration strategy and decision framework, refer to the
-[Development Principles](DEVELOPMENT-PRINCIPLES.md#migration-strategy--guidelines) document.
+[Development Principles](DEVELOPMENT-PRINCIPLES.md#-rust-vs-shell-decision-framework)
+document.
+
+**Ingestion/Embedding Architecture:** All ingestion and embedding logic must
+follow the
+[Modular Ingest Refactor Plan](migration/INGEST-MIGRATION-MODULAR-PLAN.md). This
+plan defines the canonical, reusable ingest library and the pattern for
+domain-specific wrappers (e.g., marvelai_ingest.rs). All new pipelines and
+refactors must use this architecture and update documentation accordingly.
 
 ## 🔧 Automated Cleanup Tools First
 
@@ -141,13 +153,10 @@ standards when working with others:
   preferred over long comment threads.
 - **Listen past the first answer**—follow-up questions deepen understanding.
 
-> "Empathy is a muscle: left unused, it atrophies; put to work, it grows."
-> — Jamil Zaki, Stanford
-> "Minds are mirrors to one another."
-> — David Hume
-> "Seeing the world through the eyes of the other, not seeing your world
-> reflected in their eyes."
-> — Carl Rogers
+> "Empathy is a muscle: left unused, it atrophies; put to work, it grows." —
+> Jamil Zaki, Stanford "Minds are mirrors to one another." — David Hume "Seeing
+> the world through the eyes of the other, not seeing your world reflected in
+> their eyes." — Carl Rogers
 
 For more on our collaboration philosophy, see
 [DEVELOPMENT-PRINCIPLES.md](DEVELOPMENT-PRINCIPLES.md).

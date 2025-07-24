@@ -66,7 +66,8 @@ When migrating the validation script, the following should be co-located:
 ## See Also
 
 - [Vector Store Registry Documentation](../../../docs/vector-search/vector-store-registry.md)
-- [Migration Documentation](../../../docs/migration/SCRIPT-CLEANUP-PLAN.md)
+- [Migration Documentation](../../../docs/DEVELOPMENT-PRINCIPLES.md)
+  (Historical details: [Archive](../../../docs/migration/archive/))
 
 ## Related Scripts
 

@@ -8,7 +8,8 @@ migration efforts.
 - `IMPLEMENTATION-PLAN.md` - Step-by-step plan for directory restructuring
 - `INGEST-MIGRATION.md` - Documentation of the Rust code migration process
 - `RECOMMENDED-STRUCTURE.md` - Recommended directory structure
-- `SCRIPT-MIGRATION.md` - Plan for reorganizing scripts
+- `SCRIPT-MIGRATION.md` - Plan for reorganizing scripts (archived in
+  `migration/archive/`)
 
 ## Purpose
 
