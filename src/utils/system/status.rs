@@ -209,7 +209,7 @@ fn check_vector_store(config: &StatusConfig) -> Result<()> {
     log_info("Checking vector store status...");
 
     // For this example, we'll just list the vector stores
-    let registry_path = "data/vector-stores-registry.json";
+    let registry_path = "config/vector-stores-registry.json";
 
     // Check if registry exists
     let output = ProcessCommand::new("cat").arg(registry_path).output();

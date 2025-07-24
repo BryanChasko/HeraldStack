@@ -29,8 +29,14 @@ fn main() {
     let source_file = args.input;
     let model = "harald-phi4";
     // Configurable retry and delay
-    let max_retries = std::env::var("EMBED_MAX_RETRIES").ok().and_then(|v| v.parse().ok()).unwrap_or(3);
-    let retry_delay = std::env::var("EMBED_RETRY_DELAY_SECS").ok().and_then(|v| v.parse().ok()).unwrap_or(5);
+    let max_retries = std::env::var("EMBED_MAX_RETRIES")
+        .ok()
+        .and_then(|v| v.parse().ok())
+        .unwrap_or(3);
+    let retry_delay = std::env::var("EMBED_RETRY_DELAY_SECS")
+        .ok()
+        .and_then(|v| v.parse().ok())
+        .unwrap_or(5);
     let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
     let marvel_dir = temp_dir.path().join("marvel");
     fs::create_dir_all(&marvel_dir).expect("Failed to create marvel dir");
@@ -70,7 +76,10 @@ fn main() {
     let client = reqwest::blocking::Client::new();
     // Pre-flight API check
     println!("\n🔎 Checking Ollama API status...");
-    let api_status = client.get("http://localhost:11434/" ).timeout(Duration::from_secs(5)).send();
+    let api_status = client
+        .get("http://localhost:11434/")
+        .timeout(Duration::from_secs(5))
+        .send();
     match api_status {
         Ok(resp) if resp.status().is_success() => {
             println!("  ✅ Ollama API reachable.");
@@ -96,7 +105,12 @@ fn main() {
         return;
     }
     for (label, chunk) in &chunks {
-        println!("  [TEST] Embedding chunk: [{}] ({} chars): {}", label, chunk.len(), chunk.chars().take(80).collect::<String>());
+        println!(
+            "  [TEST] Embedding chunk: [{}] ({} chars): {}",
+            label,
+            chunk.len(),
+            chunk.chars().take(80).collect::<String>()
+        );
         let test_request = serde_json::json!({
             "model": model,
             "prompt": format!("{}: {}", label, chunk)
@@ -104,7 +118,10 @@ fn main() {
         let mut success = false;
         let mut last_error = String::new();
         for attempt in 1..=max_retries {
-            println!("    Attempt {}/{}: embedding '{}'", attempt, max_retries, label);
+            println!(
+                "    Attempt {}/{}: embedding '{}'",
+                attempt, max_retries, label
+            );
             let resp = client
                 .post("http://localhost:11434/api/embeddings")
                 .header("Content-Type", "application/json")
@@ -135,27 +152,41 @@ fn main() {
             std::thread::sleep(Duration::from_secs(backoff as u64));
         }
         if !success {
-            println!("    ❌ Failed to embed chunk '{}' after {} attempts.", label, max_retries);
+            println!(
+                "    ❌ Failed to embed chunk '{}' after {} attempts.",
+                label, max_retries
+            );
             failed_chunks.push(label.clone());
             failed_chunk_details.push((label.clone(), last_error));
         }
     }
     if !failed_chunks.is_empty() {
-        println!("⚠️  Partial ingest: failed to embed {} chunk(s): {:?}", failed_chunks.len(), failed_chunks);
+        println!(
+            "⚠️  Partial ingest: failed to embed {} chunk(s): {:?}",
+            failed_chunks.len(),
+            failed_chunks
+        );
         println!("   Failed chunk details:");
         for (label, err) in &failed_chunk_details {
             println!("   - [{}]: {}", label, err);
         }
         // Log failed chunks for later retry
         let log_path = marvel_dir.join("failed_chunks.log");
-        let log_content = failed_chunk_details.iter().map(|(l,e)| format!("{}: {}", l, e)).collect::<Vec<_>>().join("\n");
+        let log_content = failed_chunk_details
+            .iter()
+            .map(|(l, e)| format!("{}: {}", l, e))
+            .collect::<Vec<_>>()
+            .join("\n");
         fs::write(&log_path, log_content).expect("Failed to write failed_chunks.log");
         println!("   Failed chunk details logged to: {}", log_path.display());
         if successful_chunks.is_empty() {
             println!("❌ Aborting ingest: no chunks embedded successfully.");
             return;
         } else {
-            println!("✅ Proceeding to ingest {} successful chunk(s)...", successful_chunks.len());
+            println!(
+                "✅ Proceeding to ingest {} successful chunk(s)...",
+                successful_chunks.len()
+            );
         }
     } else {
         println!("✅ All chunks for 'Vision' embedded successfully. Proceeding to ingest...");
@@ -182,12 +213,21 @@ fn main() {
     // Add a 'description' field if missing, for ingest compatibility
     let mut vision_obj = vision_obj.clone();
     if vision_obj.get("description").is_none() {
-        vision_obj.as_object_mut().map(|obj| obj.insert("description".to_string(), serde_json::Value::String("Test description for ingest validation".to_string())));
+        vision_obj.as_object_mut().map(|obj| {
+            obj.insert(
+                "description".to_string(),
+                serde_json::Value::String("Test description for ingest validation".to_string()),
+            )
+        });
     }
-    let vision_jsonl = serde_json::to_string(&vision_obj).expect("Failed to serialize Vision object");
+    let vision_jsonl =
+        serde_json::to_string(&vision_obj).expect("Failed to serialize Vision object");
     // Write the JSONL file directly into the root directory for ingest
-    fs::write(&jsonl_file, format!("{}\n", vision_jsonl)).expect("Failed to write Vision JSONL file");
-    let (_valid_lines, invalid_lines) = ingest_utils::validate_jsonl_lines(&fs::read_to_string(&jsonl_file).expect("Failed to read JSONL file"));
+    fs::write(&jsonl_file, format!("{}\n", vision_jsonl))
+        .expect("Failed to write Vision JSONL file");
+    let (_valid_lines, invalid_lines) = ingest_utils::validate_jsonl_lines(
+        &fs::read_to_string(&jsonl_file).expect("Failed to read JSONL file"),
+    );
     if invalid_lines == 0 {
         println!("  ✅ JSONL validation successful!");
     } else {
@@ -201,12 +241,17 @@ fn main() {
     }
     println!("--- END JSONL ---\n");
 
-    // Copy the JSONL file into the current working directory for ingest
-    let cwd_jsonl = PathBuf::from("vision.jsonl");
-    fs::copy(&jsonl_file, &cwd_jsonl).expect("Failed to copy JSONL file to working directory");
-    // Run the ingest binary with no arguments (scans current directory)
+    // Copy the JSONL file into the test output directory for ingest
+    let output_dir = PathBuf::from("tests/output");
+    fs::create_dir_all(&output_dir).expect("Failed to create test output directory");
+    let output_jsonl = output_dir.join("vision.jsonl");
+    fs::copy(&jsonl_file, &output_jsonl)
+        .expect("Failed to copy JSONL file to test output directory");
+    // Run the ingest binary with the test output directory as root
     match Command::new(&ingest_bin)
-        .output() {
+        .args(&["ingest", "--root", output_dir.to_str().unwrap()])
+        .output()
+    {
         Ok(out) => {
             let stdout = String::from_utf8_lossy(&out.stdout);
             let stderr = String::from_utf8_lossy(&out.stderr);
@@ -235,9 +280,16 @@ fn main() {
                 }
             }
             if total > 0 && success && failed == 0 {
-                println!("✅ Successfully processed all {} chunks for 'Vision' (JSONL)", total);
+                println!(
+                    "✅ Successfully processed all {} chunks for 'Vision' (JSONL)",
+                    total
+                );
             } else if total > 0 && success {
-                println!("⚠️  Processed 'Vision' with {} successful and {} failed chunks (JSONL)", total - failed, failed);
+                println!(
+                    "⚠️  Processed 'Vision' with {} successful and {} failed chunks (JSONL)",
+                    total - failed,
+                    failed
+                );
             } else if total == 0 {
                 println!("❌ No chunks were processed for 'Vision' character data (JSONL)");
             } else {

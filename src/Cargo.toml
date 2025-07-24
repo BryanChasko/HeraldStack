@@ -65,7 +65,6 @@ path = "ingest/single_character_ingest.rs"
 required-features = ["cli"]
 
 [dependencies]
-rust_ingest = { path = "../../rust_ingest" }
 reqwest = { version = "0.12", features = ["json", "stream", "blocking"] }
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "time"] }
 serde = { version = "1", features = ["derive"] }

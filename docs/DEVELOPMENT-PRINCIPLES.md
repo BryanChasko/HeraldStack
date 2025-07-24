@@ -23,7 +23,8 @@ and better error handling.
 When you need to provide functionality or information:
 
 1. **Update existing documentation** (README.md, relevant .md files)
-2. **Add --help flags** to existing Rust tools
+2. **Add comprehensive --help flags** to existing Rust tools for
+   self-documenting usage
 3. **Create/update markdown documentation** in appropriate directories
 4. **Build functionality into existing Rust binaries**
 
@@ -51,7 +52,34 @@ When you need to provide functionality or information:
 ./src/target/release/validate_naming --fix --verbose
 ```
 
-### 📚 Documentation Over Code
+### � Self-Documenting Tools
+
+**All Rust binaries must include comprehensive `--help` documentation.** This
+ensures usage information stays current with the code and reduces documentation
+maintenance overhead.
+
+#### Benefits of Self-Documenting Tools
+
+- **Always current** - Usage instructions are tied to the code
+- **Reduced maintenance** - No separate documentation to update
+- **Developer friendly** - Quick access to options and examples
+- **Consistent interface** - All tools follow the same help pattern
+
+#### Implementation Requirements
+
+- Use `clap` library for argument parsing with detailed help text
+- Include examples in help output when helpful
+- Document all options with clear descriptions
+- Provide version information with `-V` or `--version`
+
+```bash
+# Example of good self-documenting tool usage
+./src/target/release/text_chunker --help
+./src/target/release/format_json --help
+./src/target/release/validate_naming --help
+```
+
+### �📚 Documentation Over Code
 
 Prioritize well-maintained documentation over ad-hoc scripts. When encountering
 an issue:

@@ -594,7 +594,7 @@ fn main() -> Result<()> {
                 .long("registry")
                 .value_name("PATH")
                 .help("Path to registry file")
-                .default_value("./data/vector-stores-registry.json"),
+                .default_value("./config/vector-stores-registry.json"),
         )
         .get_matches();
 

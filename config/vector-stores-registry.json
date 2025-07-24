@@ -1,0 +1,69 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2025-07-21",
+  "vectorStores": [
+    {
+      "id": "marvel_characters",
+      "description": "Marvel character embeddings and metadata",
+      "sourceFiles": [
+        "personality-archetypes/pop-culture/marvel/MarvelAIs.json",
+        "personality-archetypes/pop-culture/marvel/VictorMancha.json"
+      ],
+      "dataLocation": "data/embeddings/marvel",
+      "ingestScript": "scripts/ingest_marvelai.sh",
+      "embeddingModel": "ollama",
+      "chunkingStrategy": "character-based",
+      "maxChunkSize": 250
+    },
+    {
+      "id": "heralds",
+      "description": "Herald personality archetype embeddings",
+      "sourceFiles": [
+        "personality-archetypes/Heralds.json"
+      ],
+      "dataLocation": "data/embeddings/heralds",
+      "ingestScript": "scripts/ingest_chunked.sh",
+      "embeddingModel": "ollama",
+      "chunkingStrategy": "character-based",
+      "maxChunkSize": 250
+    },
+    {
+      "id": "bojack",
+      "description": "Bojack Horseman character embeddings",
+      "sourceFiles": [
+        "personality-archetypes/pop-culture/bojack-horseman/Bojack.json"
+      ],
+      "dataLocation": "data/embeddings/bojack",
+      "ingestScript": "scripts/ingest_chunked.sh",
+      "embeddingModel": "ollama",
+      "chunkingStrategy": "semantic",
+      "maxChunkSize": 400
+    },
+    {
+      "id": "ai_entities",
+      "description": "AI entity registry embeddings",
+      "sourceFiles": [
+        "ai-entities/entity-registry.json"
+      ],
+      "dataLocation": "data/embeddings/entities",
+      "ingestScript": "scripts/ingest.sh",
+      "embeddingModel": "ollama",
+      "chunkingStrategy": "character-based",
+      "maxChunkSize": 250
+    }
+  ],
+  "embeddingModels": [
+    {
+      "id": "ollama",
+      "description": "Local Ollama embedding server",
+      "maxTokens": 400,
+      "documentationUrl": "docs/vector-search/ollama-embedding-limits.md"
+    },
+    {
+      "id": "openai",
+      "description": "OpenAI embedding API",
+      "maxTokens": 8191,
+      "documentationUrl": "integration-guides/open-ai.md"
+    }
+  ]
+}

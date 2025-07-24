@@ -22,7 +22,7 @@ struct Cli {
     verbose: bool,
 
     /// Path to registry file
-    #[arg(long, default_value = "./data/vector-stores-registry.json")]
+    #[arg(long, default_value = "./config/vector-stores-registry.json")]
     registry: PathBuf,
 
     /// Path to schema directory

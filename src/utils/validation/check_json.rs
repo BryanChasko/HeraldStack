@@ -73,7 +73,9 @@ fn main() -> Result<()> {
     log_info("Searching for registry file...");
 
     // Try direct path
-    let registry_path_direct = current_dir.join("data").join("vector-stores-registry.json");
+    let registry_path_direct = current_dir
+        .join("config")
+        .join("vector-stores-registry.json");
     log_info(&format!("Checking: {}", registry_path_direct.display()));
 
     // Try project root
@@ -81,10 +83,12 @@ fn main() -> Result<()> {
         current_dir
             .parent()
             .unwrap_or(&current_dir)
-            .join("data")
+            .join("config")
             .join("vector-stores-registry.json")
     } else {
-        current_dir.join("data").join("vector-stores-registry.json")
+        current_dir
+            .join("config")
+            .join("vector-stores-registry.json")
     };
     log_info(&format!("Checking: {}", registry_path_root.display()));
 

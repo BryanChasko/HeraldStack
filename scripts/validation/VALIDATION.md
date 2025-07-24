@@ -1,31 +1,40 @@
 # HARALD Validation & Code Quality Tools
 
-This directory contains automated scripts for validating and formatting files in
-the HARALD project.
+This directory contains essential validation scripts that must work even when
+Rust code fails. All application logic validation has been migrated to
+self-documenting Rust binaries.
 
-## 🔧 Automated Cleanup Tools - Use These First
+## 🔧 Essential Validation Scripts
 
-**Before manually fixing any formatting or linting issues, ALWAYS run these
-automated tools:**
+These scripts provide infrastructure-level validation and orchestration:
 
 ### Available Scripts
 
-- **`check-json.sh`** - Validates and formats JSON files using jsonlint and
-  prettier. **Run this for any JSON formatting issues.**
-- **`check-rust.sh`** - Runs formatting (rustfmt), linting (clippy), tests, and
-  security audit on Rust code. **Run this for any Rust issues.**
-- **`format_md`** - (Rust tool) Formats Markdown files using prettier  
-  with consistent line length and spacing. **Run this for any Markdown
-  formatting issues.**
-- **`validate_naming`** - (Rust tool) Validates file and directory names against
-  project conventions. Use `--fix --verbose` for interactive fixes.
+- **`check-json.sh`** - Orchestrates JSON validation using Rust tools
+- **`check-rust.sh`** - Orchestrates Rust code quality checks (formatting,
+  linting, tests, security audit). Must work even when Rust code fails.
+
+## Rust Validation Tools
+
+For day-to-day validation, use the self-documenting Rust binaries:
+
+```bash
+# Build all validation tools
+cd src && cargo build --release --features cli
+
+# Use self-documenting validation tools
+./src/target/release/format_md --help
+./src/target/release/validate_naming --help --fix --verbose
+./src/target/release/check_json --help
+./src/target/release/format_json --help
+```
 
 ## Usage
 
 **Always run these scripts from the project root:**
 
 ```bash
-# Fix JSON formatting and validation issues
+# Essential validation (infrastructure-level)
 ./scripts/validation/check-json.sh
 
 # Fix Rust formatting, linting, run tests

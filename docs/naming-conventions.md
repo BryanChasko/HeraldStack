@@ -31,9 +31,7 @@ best practices for each file type.
 /docs               # Documentation files
 /infrastructure     # Cloud and deployment configuration
 /integration-guides # External service integration documentation
-/memory-schemas     # Memory and state schemas
 /personality-archetypes # Personality profiles and definitions
-/rust_ingest        # Rust codebase for data ingestion
 /scripts            # Utility and automation scripts
 /workflows          # Workflow definitions and documentation
 ```
@@ -110,7 +108,7 @@ best practices for each file type.
 #### Example Structure
 
 ```
-/memory-schemas/
+/config/schemas/
   - entity-context.json
   - emotion-vectors.json
   - conversation-metadata.json

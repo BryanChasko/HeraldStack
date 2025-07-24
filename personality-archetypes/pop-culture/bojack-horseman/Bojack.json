@@ -1,14 +1,14 @@
 [
   {
-	"id": "bojack-horseman",
-	"name": "BoJack Horseman",
-	"series": "BoJack Horseman (2014, Netflix)",
-	"settings": ["Horsin’ Around", "Hollywoo"],
-	"traits": ["Charisma", "self-destruction", "introspection"],
-	"themes": ["Identity", "disillusionment", "addiction", "flawed redemption"],
-	"quotes": [
-	  "You are all the things that are wrong with you.",
-	  "I need to go take a shower so I can't tell if I'm crying or not."
-	]
+    "id": "bojack-horseman",
+    "name": "BoJack Horseman",
+    "series": "BoJack Horseman (2014, Netflix)",
+    "settings": ["Horsin’ Around", "Hollywoo"],
+    "traits": ["Charisma", "self-destruction", "introspection"],
+    "themes": ["Identity", "disillusionment", "addiction", "flawed redemption"],
+    "quotes": [
+      "You are all the things that are wrong with you.",
+      "I need to go take a shower so I can't tell if I'm crying or not."
+    ]
   }
 ]

@@ -1,6 +1,5 @@
-
+use crate::ingest::{run_with_config, IngestConfig};
 use clap::Parser;
-use rust_ingest::{ingest_run, ingest::IngestConfig};
 use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
@@ -29,7 +28,7 @@ async fn main() {
         max_tokens: args.max_tokens,
         max_concurrent_files: args.max_concurrent_files,
     };
-    match ingest_run(config).await {
+    match run_with_config(config).await {
         Ok(_) => println!("MarvelAI ingest completed successfully."),
         Err(e) => eprintln!("MarvelAI ingest failed: {}", e),
     }

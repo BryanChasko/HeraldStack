@@ -7,22 +7,10 @@
 
 ## Core Vision
 
-HeraldStack is an am## Directory Structure Overview
-
-For a detailed, canonical description of the project's directory structure, see:
-
-- [docs/DETAILED.md](docs/DETAILED.md) – **Directory Structure and Naming Best
-  Practices** (includes a `tree` overview and rationale)
-- [docs/naming-conventions.md](docs/naming-conventions.md) – **Directory and
-  file naming conventions**
-- [docs/DEVELOPMENT-PRINCIPLES.md](docs/DEVELOPMENT-PRINCIPLES.md) –
-  **Development principles and migration history**
-
-Historical migration documents have been moved to
-[docs/migration/archive/](docs/migration/archive/) for reference.gence system
-that integrates memory, emotion, and modular execution across a trusted cohort
-of AI entities to restore momentum, anchor decisions, and evolve alongside
-Bryan's ongoing personal and professional journey.
+HeraldStack is an ambient intelligence system that integrates memory, emotion,
+and modular execution across a trusted cohort of AI entities to restore
+momentum, anchor decisions, and evolve alongside Bryan's ongoing personal and
+professional journey.
 
 ## 🚨 Critical Development Principles
 
@@ -33,7 +21,8 @@ for any application functionality. Instead:
 
 - **Add features to existing Rust binaries**
 - **Update documentation** (README.md, .md files)
-- **Add --help flags** to existing tools
+- **Add comprehensive --help flags** to existing tools for self-documenting
+  usage
 
 #### Exceptions: Scripts That Remain as Shell Scripts
 
@@ -64,9 +53,140 @@ Before manually fixing linting/formatting issues, run our automated tools:
 **See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for complete development
 guidelines.**
 
+## Directory Structure Overview
+
+HARALD follows a standard project structure designed for maintainability and
+clear separation of concerns:
+
+### Recommended Project Layout
+
+```text
+HARALD/
+├── src/                  # Main source code directory
+│   ├── api/              # API endpoints and handlers
+│   ├── core/             # Core application logic
+│   │   ├── embedding/    # Embedding-related logic
+│   │   ├── entities/     # Entity management logic
+│   │   └── memory/       # Memory handling logic
+│   ├── ingest/           # Ingestion pipeline and tools
+│   └── utils/            # Shared utilities and helpers
+│       ├── json-tools/   # JSON formatting and validation
+│       ├── validation/   # Code validation utilities
+│       └── system/       # System utilities
+├── ai-entities/          # AI entity definitions and metadata
+├── config/               # Configuration files and schemas
+│   ├── schemas/          # JSON schemas
+│   ├── ethics/           # Ethics guidelines
+│   └── models/           # Model configurations
+├── data/                 # Data files and registries
+│   ├── raw/              # Raw input data
+│   └── processed/        # Processed data and embeddings
+├── docs/                 # Documentation
+│   ├── migration/        # Migration documentation and archive
+│   └── vector-search/    # Vector search documentation
+├── scripts/              # Infrastructure and deployment scripts
+│   ├── deploy/           # Deployment scripts
+│   └── validation/       # Validation scripts (shell-based)
+└── tests/                # Tests and fixtures
+    ├── unit/             # Unit tests
+    ├── integration/      # Integration tests
+    └── fixtures/         # Test fixtures and sample data
+```
+
+### Key Principles
+
+- **`src/`** - Central location for all application code written in Rust
+  - Sub-modules organized by functionality (api, core, ingest, utils)
+  - All Rust binaries built from this directory tree
+- **`config/`** - Centralized configuration management
+  - JSON schemas, model configs, ethics guidelines
+- **`data/`** - Raw and processed data with clear separation
+  - Vector store registries and embedded data
+- **`scripts/`** - Infrastructure scripts only (deployment, CI/CD)
+  - Application logic has been migrated to Rust in `src/`
+- **`tests/`** - Comprehensive testing structure
+  - Unit, integration, and fixture organization
+
+### Migration Status
+
+This structure represents the target state. Current migration progress:
+
+- ✅ Core Rust tools implemented in `src/utils/`
+- ✅ Ingestion pipeline moved to `src/ingest/`
+- ✅ Shell scripts migrated to Rust binaries
+- 🔄 Ongoing migration of remaining application logic to `src/`
+
+For detailed documentation:
+
+- [docs/DETAILED.md](docs/DETAILED.md) – Complete directory descriptions
+- [docs/naming-conventions.md](docs/naming-conventions.md) – Naming standards
+- [docs/DEVELOPMENT-PRINCIPLES.md](docs/DEVELOPMENT-PRINCIPLES.md) – Development
+  principles and migration history
+
+## Archive Policy
+
+### Historical Documents and Legacy Code
+
+HARALD maintains archived materials for historical reference and context. These
+archives are excluded from active development workflows:
+
+#### Archive Locations
+
+- **`docs/migration/archive/`** - Historical migration documentation
+  - Shell script prevention strategies
+  - Detailed migration plans and checklists
+  - Step-by-step cleanup procedures
+  - Legacy decision documentation
+
+- **`scripts/*.legacy`** - Archived shell scripts (when present)
+  - Backup copies of migrated scripts
+  - Reference implementations for comparison
+  - Historical functionality documentation
+
+- **Early experiments and prototypes** (project-specific locations)
+  - Proof-of-concept implementations
+  - Alternative approaches that were not adopted
+  - Research and exploration code
+
+#### Archive Characteristics
+
+- **Ignored by automation** - Archive directories are excluded from:
+  - Linting and formatting tools
+  - Build processes and validation
+  - Automated testing suites
+  - Code quality checks
+
+- **Historical reference only** - Archived materials:
+  - Preserve context for past decisions
+  - Document migration rationale and process
+  - Provide examples of previous approaches
+  - Should not be modified or actively maintained
+
+- **Documentation over deletion** - We prefer archiving to deletion because:
+  - Historical context aids future decision-making
+  - Migration patterns can be reused
+  - Past approaches inform current best practices
+  - Preserves institutional knowledge
+
+#### When to Archive
+
+Archive materials when:
+
+1. **Migrating functionality** from shell scripts to Rust implementations
+2. **Consolidating documentation** to eliminate duplication
+3. **Refactoring approaches** that replace previous patterns
+4. **Completing experiments** that informed current architecture
+
+#### Accessing Archives
+
+- Use archived materials for **historical context only**
+- Reference archives when **documenting decisions**
+- Consult archives to **understand migration patterns**
+- **Do not** use archived code in active development
+
 ## Key Components
 
-- **🦊 HARALD** – Default entity for emotional mirroring, decision anchoring,  
+- **🦊 HARALD** – Default entity for emotional mirroring, decision anchoring,
   and continuity management
 - **🧠 Herald Entity Cohort** – Specialized assistants with distinct
   personalities and roles
@@ -131,7 +251,16 @@ cd src && cargo build --release --features cli
 ### Using Rust Binaries
 
 All binaries are located in `src/target/release/` and should be run from the
-project root:
+project root. **Each tool includes comprehensive `--help` documentation**:
+
+```bash
+# Get detailed usage for any tool
+./src/target/release/format_json --help
+./src/target/release/validate_naming --help
+./src/target/release/text_chunker --help
+```
+
+#### Common Usage Examples
 
 ```bash
 # Format and validate JSON files
@@ -146,12 +275,14 @@ project root:
 # Check system status (Ollama services, models, etc.)
 ./src/target/release/status
 
-# Process text for embedding
-./src/target/release/text_chunker --input file.txt --mode char --size 250
-
-# Run any tool with --help to see available options
-./src/target/release/format_json --help
+# Process text for embedding with detailed options
+./src/target/release/text_chunker --char 250 --file input.txt --json
 ```
+
+**Self-Documenting Design**: Instead of maintaining separate documentation, each
+binary provides complete usage instructions via `--help`. This ensures usage
+information stays current with the code and reduces documentation maintenance
+overhead.
 
 **Note**: These Rust binaries have replaced the previous shell scripts for
 application logic. The old shell scripts in `scripts/validation/` have been
@@ -191,12 +322,10 @@ handling.
   directories
 - **Build & Deploy**: Use `./scripts/deploy/deploy.sh` for deployment (see
   [DEPLOY.md](scripts/deploy/DEPLOY.md) for usage)
-- **JSON Tools**: Rust-based JSON processing utilities in `src/utils/json_tools`
-  (see [JSON-TOOLS.md](src/utils/json_tools/JSON-TOOLS.md))
+- **JSON Tools**: Rust-based JSON processing utilities in `src/utils/json-tools`
+  (see [JSON-TOOLS.md](src/utils/json-tools/JSON-TOOLS.md))
 - **Shell vs Rust**: Infrastructure scripts use shell, application logic uses
   Rust
-- [Project Structure](docs/migration/RECOMMENDED-STRUCTURE.md) - Recommended
-  organization
 - **Ingestion/Embedding Architecture:** All ingestion and embedding logic must
   follow the
   [Modular Ingest Refactor Plan](docs/migration/INGEST-MIGRATION-MODULAR-PLAN.md).
@@ -239,20 +368,6 @@ guidelines including those defined in
 - **Models**: Model configurations can be found in `config/models/`
 - **Test Data**: Test fixtures are available in `tests/fixtures/` (see
   [FIXTURES.md](tests/fixtures/FIXTURES.md) for details)
-
-## Directory Structure Overview
-
-For a detailed, canonical description of the project’s directory structure, see:
-
-- [docs/DETAILED.md](docs/DETAILED.md) – **Directory Structure and Naming Best
-  Practices** (includes a `tree` overview and rationale)
-- [docs/naming-conventions.md](docs/naming-conventions.md) – **Directory and
-  file naming conventions**
-
-Other structure-related documents in `docs/migration/` (such as
-`RECOMMENDED-STRUCTURE.md`, `DIRECTORY-REORGANIZATION.md`, and
-`IMPLEMENTATION-PLAN.md`) are project planning artifacts and will be moved to a
-`docs/project-planning/` subdirectory.
 
 ---
 

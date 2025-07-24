@@ -30,70 +30,30 @@ plan defines the canonical, reusable ingest library and the pattern for
 domain-specific wrappers (e.g., marvelai_ingest.rs). All new pipelines and
 refactors must use this architecture and update documentation accordingly.
 
-## 🔧 Automated Cleanup Tools First
+## Build & Validate
 
-Before manually fixing any formatting or linting issues, **ALWAYS** run our
-automated tools:
-
-```bash
-# Fix JSON formatting and validation issues
-./src/target/release/check_json --fix
-
-# Fix Rust formatting, run clippy, and tests
-./scripts/validation/check-rust.sh
-
-# Fix Markdown formatting (line length, spacing, etc.)
-./src/target/release/format_md
-
-# Check and optionally fix naming convention problems
-./src/target/release/validate_naming --fix --verbose
-```
-
-**These tools will automatically resolve most linting and formatting issues.**
-Only manually edit files after running the appropriate automated tool.
-
-### 🔎 Tool Paths and Usage
-
-Our development tools are Rust programs that get compiled to executable files
-during the build process. When you run `cargo build --release` in a Rust
-project, it creates optimized binaries in the `target/release` directory.
-
-In our project, binaries can be found in two different locations:
-
-**Main tools directory**: `./src/target/release/`
-
-- Most Rust tools are here (format_md, validate_naming, etc.)
-- Built from the src/Cargo.toml file
-- Example: `./src/target/release/format_md`
-
-**Secondary location**: `./target/release/`
-
-- Some newer tools are here (check_json, status, etc.)
-- Example: `./src/target/release/check_json`
-
-You need to check both locations when looking for tools. Always refer to
-specific documentation for each tool to find its correct path.
-
-Here are the correct commands to run our most common tools from the project root
-directory:
+Before making any changes, build the Rust tools and run validation:
 
 ```bash
-# Format Markdown files with prettier
-./src/target/release/format_md path/to/your/file.md
+# 1. Build all Rust tools (from project root)
+cargo build --release --features cli
 
-# Check and fix JSON files (wrapper around format_json)
-./src/target/release/check_json --fix
-
-# Validate naming conventions across the codebase
-./src/target/release/validate_naming --fix --verbose
-
-# Check system status (Ollama services, models, etc)
-./src/target/release/status
+# 2. Run validation tools as needed
+./src/target/release/check_json --fix              # Fix JSON formatting
+./src/target/release/validate_naming --fix --verbose  # Fix naming issues
+./src/target/release/format_md path/to/file.md     # Format specific markdown
+./scripts/validation/check-rust.sh                 # Rust code quality checks
 ```
 
-**IMPORTANT:** Always run these tools from the project root directory to ensure
-correct path resolution. Running them from other directories may cause file path
-errors.
+**Infrastructure Scripts**: Deployment and infrastructure orchestration scripts
+like `./scripts/deploy/deploy.sh` remain as shell scripts since they orchestrate
+external tools (AWS CLI, Docker) but contain no application logic.
+
+**Self-Documenting Tools**: Each Rust tool provides comprehensive usage
+instructions via `--help`. Example: `./src/target/release/format_json --help`
+
+**Important**: Always run commands from the project root directory to ensure
+correct path resolution.
 
 ## Development Environment
 

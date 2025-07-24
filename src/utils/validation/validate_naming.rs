@@ -314,7 +314,7 @@ fn validate_json_file_names(config: &ValidatorConfig) -> Result<Vec<NamingIssue>
         } else if path_str.contains("/data/schemas/")
             || path_str.contains("/data/vector")
             || path_str.ends_with("-config.json")
-            || path_str.contains("/memory-schemas/")
+            || path_str.contains("/config/schemas/")
         {
             if filename.contains('_') {
                 let new_name = filename.replace('_', "-");

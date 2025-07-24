@@ -296,54 +296,127 @@ each component.
   and [GitHub repository](https://github.com/jean-pierreBoth/hnswlib-rs) for
   details and updates.
 
-HARALD/ # Project root (kebab-case) ├── ai-entities/ # AI entity
-definitions and metadata │ ├── entity-registry.json # Entity registry (all
-entities) │ ├── harald.md # Entity: HARALD │ ├── stratia.md # Entity: Stratia │
-├── myrren.md # Entity: Myrren │ ├── liora.md # Entity: Liora │ ├──
-kade-vox.md # Entity: Kade Vox │ ├── solan.md # Entity: Solan │ ├── ellow.md #
-Entity: Ellow │ ├── orin.md # Entity: Orin │ └── prompts/ # Prompt templates for
-entities ├── config/ # Schemas, ethics, and model configs │ ├── CONFIG.md #
-Config documentation │ ├── ethics/ # Ethical guidelines (e.g.,
-LawsOfRobotics.json) │ │ └── LawsOfRobotics.json │ ├── models/ # Model
-configuration files │ └── schemas/ # Data schemas for validation ├── data/ #
-Vector store registry, ingested data │ ├── vector-stores-registry.json │ └──
-schemas/ # Data schemas (if present) ├── datasets/ # Source datasets for
-ingestion/embedding ├── docs/ # System, migration, and vector search docs │ ├──
-CONTRIBUTING.md # Contribution guidelines │ ├── DETAILED.md # This file
-(detailed docs) │ ├── DEVELOPMENT-PRINCIPLES.md │ ├── naming-conventions.md │
-├── migration/ # Shell-to-Rust migration plans │ │ ├── RECOMMENDED-STRUCTURE.md
-│ │ ├── DIRECTORY-REORGANIZATION.md │ │ └── IMPLEMENTATION-PLAN.md │ └──
-vector-search/ # Vector search and embedding docs │ ├──
-character-based-chunking.md │ ├── ollama-embedding-limits.md │ └──
-jsonl-ingestion.md ├── infrastructure/ # Cloud and deployment infrastructure
-docs │ ├── aws-stack.md │ ├── cost-monitoring.md │ ├── deployment-guide.md │ └──
-pinecone-schemas.md ├── integration-guides/ # Integration docs for external
-APIs/services │ ├── agentic-orchestration.md │ ├──
-amazon-voice-interoperability.md │ ├── anthropic.md │ ├── aws.md │ ├──
-bedrock.md │ ├── cohere.md │ ├── google.md │ ├── griptape.md │ ├── haystack.md │
-├── hugging-face.md │ ├── microsoft.md │ ├── open-ai.md │ └── pinecone.md ├──
-logs/ # Ingestion and embedding logs │ ├── embedding*size_test*_.log │ ├──
-ingest*log*_.log │ └── embedding_api/ # API-specific logs ├── memory-schemas/ #
-Schemas for memory and context │ ├── conversation-metadata.json │ ├──
-emotion-vectors.json │ ├── entity-context.json │ └── narrative-arc.json ├──
-personality-archetypes/ # Archetype definitions and docs │ ├── Heralds.json │
-├── heralds.md │ ├── mythological/ │ │ ├── celtic/ │ │ ├── norse/ │ │ └──
-human-inspired.md │ └── pop-culture/ │ ├── bojack-horseman/ │ │ └── Bojack.json
-│ ├── literary/ │ └── marvel/ │ ├── MarvelAIs.json │ ├──
-pop-culture-ai-references.md │ └── VictorMancha.json ├── rust_ingest/ # Rust CLI
-tools for ingestion/embedding │ ├── Cargo.toml │ ├── Cargo.lock │ ├──
-rustREADME.md │ ├── src/ │ └── target/ ├── scripts/ # Shell scripts for
-deployment/validation only │ ├── build_rust_tools.sh │ └── validation/ │ ├──
-check-json.sh │ └── check-rust.sh │ └── deploy/ │ └── deploy.sh ├── src/ # Core
-Rust code (all app logic) │ ├── ingest/ # Ingestion pipeline logic │ │ ├──
-marvelai_ingest.rs # Domain-specific ingest wrapper │ │ ├── ingest.rs # Core
-ingest logic │ │ ├── chunking_utils.rs # Character-based chunking │ │ ├──
-embedding.rs # Embedding API integration │ │ └── ... │ ├── utils/ │ │ ├──
-json_tools/ │ │ │ ├── format_json.rs │ │ │ ├── validate_json_schema.rs │ │ │ └──
-... │ │ └── ... │ └── target/ # Rust build output (release/debug) ├── target/ #
-Rust build output (workspace root) ├── tests/ # Test fixtures and test code │
-├── fixtures/ │ │ └── FIXTURES.md │ ├── ingest_tests.rs # Ingestion/embedding
-tests │ ├── utils_tests.rs # Utility function tests │ └── ... ├── workflows/ #
-CI/CD and automation configs │ ├── rust.yml # Rust build/test workflow │ ├──
-lint.yml # Linting/formatting workflow │ └── ... ├── README.md # Project
-overview, build, and dev standards └── Cargo.toml # Rust workspace config (root)
+```text
+HARALD/                                    # Project root (kebab-case)
+├── ai-entities/                          # AI entity definitions and metadata
+│   ├── entity-registry.json              # Entity registry (all entities)
+│   ├── harald.md                         # Entity: HARALD
+│   ├── stratia.md                        # Entity: Stratia
+│   ├── myrren.md                         # Entity: Myrren
+│   ├── liora.md                          # Entity: Liora
+│   ├── kade-vox.md                       # Entity: Kade Vox
+│   ├── solan.md                          # Entity: Solan
+│   ├── ellow.md                          # Entity: Ellow
+│   ├── orin.md                           # Entity: Orin
+│   └── prompts/                          # Prompt templates for entities
+├── config/                               # All configuration files
+│   ├── CONFIG.md                         # Config documentation
+│   ├── .markdownlint.json                # Markdown linting configuration
+│   ├── vector-stores-registry.json       # Vector store registry
+│   ├── ethics/                           # Ethical guidelines
+│   │   └── LawsOfRobotics.json
+│   ├── models/                           # Model configuration files
+│   │   └── Modelfile                     # Ollama model configuration
+│   └── schemas/                          # JSON schemas for validation
+│       ├── conversation-metadata.json    # Conversation schema
+│       ├── emotion-vectors.json          # Emotion data schema
+│       ├── entity-context.json           # Entity context schema
+│       └── narrative-arc.json            # Narrative structure schema
+├── data/                                 # Processed data and ingested content
+├── datasets/                             # Source datasets for
+   ingestion/embedding
+├── docs/                                 # System, migration, and vector search
+   docs
+│   ├── CONTRIBUTING.md                   # Contribution guidelines
+│   ├── DETAILED.md                       # This file (detailed docs)
+│   ├── DEVELOPMENT-PRINCIPLES.md         # Development principles and
+   migration history
+│   ├── naming-conventions.md             # Naming standards
+│   ├── migration/                        # Active migration plans
+│   │   ├── README.md                     # Migration index with archive
+   reference
+│   │   ├── INGEST-MIGRATION-MODULAR-PLAN.md
+│   │   └── archive/                      # Historical migration documents
+│   │       └── migration-2025/           # 2025 shell-to-Rust migration
+   archive
+│   ├── archive/                          # Top-level archive directory
+│   │   └── migration-2025/               # Historical migration documents
+   (2025)
+│   └── vector-search/                    # Vector search and embedding docs
+│       ├── character-based-chunking.md
+│       ├── ollama-embedding-limits.md
+│       └── jsonl-ingestion.md
+├── infrastructure/                       # Cloud and deployment infrastructure docs
+│   ├── aws-stack.md
+│   ├── cost-monitoring.md
+│   ├── deployment-guide.md
+│   └── pinecone-schemas.md
+├── integration-guides/                   # Integration docs for external APIs/services
+│   ├── agentic-orchestration.md
+│   ├── amazon-voice-interoperability.md
+│   ├── anthropic.md
+│   ├── aws.md
+│   ├── bedrock.md
+│   ├── cohere.md
+│   ├── google.md
+│   ├── griptape.md
+│   ├── haystack.md
+│   ├── hugging-face.md
+│   ├── microsoft.md
+│   ├── open-ai.md
+│   └── pinecone.md
+├── logs/                                 # Ingestion and embedding logs (gitignored)
+│   ├── embedding_size_test_*.log
+│   ├── ingest_log_*.log
+│   └── embedding_api/                    # API-specific logs
+├── personality-archetypes/               # Archetype definitions and docs
+│   ├── Heralds.json
+│   ├── heralds.md
+│   ├── mythological/
+│   │   ├── celtic/
+│   │   ├── norse/
+│   │   └── human-inspired.md
+│   └── pop-culture/
+│       ├── bojack-horseman/
+│       │   └── Bojack.json
+│       ├── literary/
+│       └── marvel/
+│           ├── MarvelAIs.json
+│           ├── pop-culture-ai-references.md
+│           └── VictorMancha.json
+├── scripts/                              # Shell scripts for deployment/validation only
+│   ├── build_rust_tools.sh
+│   ├── validation/
+│   │   ├── check-json.sh
+│   │   └── check-rust.sh
+│   └── deploy/
+│       └── deploy.sh
+├── src/                                  # Core Rust code (all app logic)
+│   ├── ingest/                           # Ingestion pipeline logic
+│   │   ├── marvelai_ingest.rs            # Domain-specific ingest wrapper
+│   │   ├── ingest.rs                     # Core ingest logic
+│   │   ├── chunking_utils.rs             # Character-based chunking
+│   │   ├── embedding.rs                  # Embedding API integration
+│   │   └── lib.rs                        # Module exports
+│   ├── utils/                            # Shared utilities
+│   │   ├── json_tools/                   # JSON formatting and validation
+│   │   │   ├── format_json.rs
+│   │   │   ├── validate_json_schema.rs
+│   │   │   └── lib.rs
+│   │   └── validation/                   # Code validation utilities
+│   ├── Cargo.toml                        # Source package configuration
+│   └── target/                           # Rust build output (release/debug)
+├── target/                               # Rust build output (workspace root)
+├── tests/                                # Test fixtures and test code
+│   ├── fixtures/
+│   │   └── FIXTURES.md
+│   ├── ingest_tests.rs                   # Ingestion/embedding tests
+│   ├── utils_tests.rs                    # Utility function tests
+│   └── integration/                      # Integration tests
+├── workflows/                            # CI/CD and automation configs
+│   ├── rust.yml                          # Rust build/test workflow
+│   ├── lint.yml                          # Linting/formatting workflow
+│   └── deploy.yml                        # Deployment workflow
+├── README.md                             # Project overview, build, and dev standards
+└── Cargo.toml                            # Rust workspace config (root)
+```

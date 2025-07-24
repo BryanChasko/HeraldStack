@@ -20,6 +20,12 @@ Cargo.lock
 *.bin
 meta.json
 
+# Logs and temporary files
+/logs/
+src/logs/
+*.log
+*.log.*
+
 # Environment variables
 .env
 .env.local

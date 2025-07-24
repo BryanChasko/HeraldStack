@@ -1,6 +1,6 @@
 
 [workspace]
 members = [
-    "rust_ingest"
+    "src"
 ]
 resolver = "2"

@@ -6,6 +6,8 @@ This directory contains test data files used for testing the HARALD system.
 
 - `test_single_character.json` - Sample character data for testing ingest
   functionality
+- `vision.jsonl` - Generated JSONL output for Vision character testing (created
+  by `single_character_ingest.rs`)
 
 ## Usage
 
