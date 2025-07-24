@@ -305,18 +305,24 @@ async fn process_directory_tree(
     stats.files_processed += processed_count.load(Ordering::SeqCst);
     stats.files_skipped += skipped_count.load(Ordering::SeqCst);
 
-    // Sort results by file_id and insert into the index
+    // Sort results by file_id and insert all embeddings with metadata
     let mut results = file_paths.lock().unwrap();
     results.sort_by_key(|(id, _, _)| *id);
 
-    // Now populate the index and metadata
-    for (_, path, embedding) in results.iter() {
-        let file_id = file_metadata.len();
-        index.insert((embedding.as_slice(), file_id));
-        file_metadata.push(path.clone());
+    let mut total_embeddings = 0;
+    for (_, path, indexed_embeddings) in results.iter() {
+        for (obj_idx, field, start, end, embedding) in indexed_embeddings {
+            let embed_id = file_metadata.len();
+            index.insert((embedding.as_slice(), embed_id));
+            // Store metadata as a tuple: (file, obj_idx, field, start, end)
+            file_metadata.push(PathBuf::from(format!(
+                "{}|obj:{}|field:{}|range:{}-{}",
+                path.display(), obj_idx, field, start, end
+            )));
+            total_embeddings += 1;
+        }
     }
-
-    println!("Successfully indexed {} files", file_metadata.len());
+    println!("Successfully indexed {} embeddings", total_embeddings);
     Ok(())
 }
 
@@ -413,12 +419,11 @@ async fn process_single_file_for_embedding(
     }
     println!("[DEBUG] Total sub-chunks embedded for file {}: {}", path.display(), total_sub_chunks);
     println!("[DEBUG] Total embeddings indexed: {}", indexed_embeddings.len());
-    // Instead of returning a single embedding, return an error if none found
+    // Instead of returning a single embedding, return all indexed embeddings
     if indexed_embeddings.is_empty() {
         return Err(anyhow::anyhow!("No embeddings generated for file: {}", path.display()));
     }
-    // For compatibility, return the first embedding (could be refactored to index all)
-    Ok(indexed_embeddings[0].4.clone())
+    Ok(indexed_embeddings.clone())
 }
 
 /// Processes a single file and adds it to the index.

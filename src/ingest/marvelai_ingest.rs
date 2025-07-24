@@ -213,6 +213,9 @@ async fn main() {
         println!("\n--- Processing chunk {} ---", i + 1);
         if debug {
             println!("    [DEBUG] Validating chunk JSON...");
+            let chunk_file_content = fs::read_to_string(&chunk_path).unwrap_or_default();
+            println!("    [DEBUG] Chunk file path: {:?}", chunk_path);
+            println!("    [DEBUG] Chunk file contents ({} chars):\n{}", chunk_file_content.chars().count(), chunk_file_content);
         }
         // Read chunk and validate
         let chunk_content = match fs::read_to_string(&chunk_path) {
@@ -398,6 +401,10 @@ async fn main() {
             failed_count += 1;
             continue;
         }
+        if debug {
+            println!("    [DEBUG] Running ingest binary: {:?}", ingest_bin);
+            println!("    [DEBUG] Ingest command: {:?} ingest --root {:?}", ingest_bin, chunk_dir.path());
+        }
         let output = Command::new(&ingest_bin)
             .arg("ingest")
             .arg("--root")
@@ -407,6 +414,9 @@ async fn main() {
             Ok(out) => {
                 println!("Ingest stdout:\n{}", String::from_utf8_lossy(&out.stdout));
                 println!("Ingest stderr:\n{}", String::from_utf8_lossy(&out.stderr));
+                if debug {
+                    println!("    [DEBUG] Ingest exit status: {}", out.status);
+                }
                 if out.status.success() {
                     println!("✅ Successfully processed chunk {}", i + 1);
                     processed_count += 1;
