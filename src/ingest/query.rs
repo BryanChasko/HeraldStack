@@ -20,7 +20,7 @@ use hnsw_rs::hnswio::HnswIo;
 use hnsw_rs::prelude::*;
 use serde_json::Value;
 
-use crate::embed;
+use crate::ingest::embed;
 
 /// Maximum number of characters to include from each retrieved document.
 ///

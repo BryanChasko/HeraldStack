@@ -1,14 +1,13 @@
-mod chunking_utils;
+use crate::ingest::chunking_utils::chunk_entity_fields;
 use anyhow::{Context, Result};
-use chunking_utils::chunk_entity_fields;
 use clap::{Arg, Command};
 use serde_json::Value;
 use std::fs;
 use std::time::{Duration, Instant};
 use tokio::time;
 
-// Import our existing utilities through the harald crate
-use harald::core::embedding::ollama_api::OllamaApiClient;
+// Import our existing utilities through the crate
+use crate::core::embedding::ollama_api::OllamaApiClient;
 
 /// Character data structure for Marvel character processing
 #[derive(Debug, Clone)]

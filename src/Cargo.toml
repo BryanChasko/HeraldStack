@@ -11,6 +11,11 @@ path = "ingest/main.rs"
 required-features = ["cli"]
 
 [[bin]]
+name = "marvelai_ingest"
+path = "ingest/marvelai_ingest.rs"
+required-features = ["cli"]
+
+[[bin]]
 name = "text_chunker"
 path = "utils/chunker_bin.rs"
 required-features = ["cli"]

@@ -7,9 +7,8 @@ use std::path::PathBuf;
 use std::process::Command;
 use std::time::{Duration, Instant};
 
-mod chunking_utils;
-use chunking_utils::chunk_entity_fields;
-mod ingest_utils;
+use crate::ingest::chunking_utils::chunk_entity_fields;
+use crate::ingest::ingest_utils;
 use clap::Parser;
 
 #[derive(Parser, Debug)]

@@ -200,6 +200,26 @@ async fn attempt_embedding(text: &str, client: &Client, config: &EmbedConfig) ->
     Ok(response.embedding)
 }
 
+/// Simple wrapper function for embedding with default configuration.
+///
+/// This provides a simpler API for basic embedding needs while maintaining
+/// compatibility with existing code.
+///
+/// # Arguments
+/// * `text` - Text to embed
+/// * `max_tokens` - Maximum tokens (currently unused but kept for compatibility)
+/// * `client` - HTTP client for making requests
+///
+/// # Returns
+/// Returns a vector of f32 values representing the embedding.
+///
+/// # Errors
+/// Returns an error if the embedding process fails.
+pub async fn embed(text: &str, max_tokens: usize, client: &Client) -> Result<Vec<f32>> {
+    let config = EmbedConfig::default();
+    embed_with_config(text, max_tokens, client, config).await
+}
+
 /// Validates the generated embedding vector.
 fn validate_embedding(embedding: &[f32]) -> Result<()> {
     if embedding.is_empty() {
@@ -231,6 +251,14 @@ fn validate_embedding(embedding: &[f32]) -> Result<()> {
 ///
 /// # Returns
 /// Returns a configured `EmbedConfig` instance.
+pub fn create_config(model: &str, endpoint: &str) -> EmbedConfig {
+    EmbedConfig {
+        model: model.to_string(),
+        endpoint: endpoint.to_string(),
+        timeout_secs: DEFAULT_TIMEOUT_SECS,
+        max_retries: MAX_RETRY_ATTEMPTS,
+    }
+}
 
 #[cfg(test)]
 mod tests {
