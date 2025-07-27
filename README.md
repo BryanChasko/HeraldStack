@@ -218,11 +218,12 @@ Archive materials when:
 | Component       | Technology      |
 | --------------- | --------------- |
 | Compute         | AWS Lambda      |
+| Data Structure  } JSONL           |
 | Storage         | Amazon S3       |
 | State Tracking  | Amazon DynamoDB |
 | Semantic Memory | Pinecone        |
 | Core Logic      | Rust            |
-| Infrastructure  | Shell Scripts   |
+| Deployment      | Shell Scripts   |
 
 ## Build & Deploy
 
