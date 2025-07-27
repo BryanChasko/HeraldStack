@@ -2,8 +2,8 @@
 
 [![Version](https://img.shields.io/badge/version-0.0.1-blue.svg)](https://semver.org)
 
-> A context-aware, emotionally adaptive AI framework built exclusively for Bryan
-> Chasko
+> A context-aware, emotionally adaptive AI framework built exclusively for
+> Bryan Chasko
 
 ## Core Vision
 
@@ -16,7 +16,8 @@ professional journey.
 
 ### No New Shell Scripts for Application Logic
 
-**We are migrating FROM shell scripts TO Rust.** Do not create new shell scripts
+**We are have bias to write our functionality in Rust.** Do not
+create new shell scripts
 for any application functionality. Instead:
 
 - **Add features to existing Rust binaries**
