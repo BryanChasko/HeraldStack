@@ -8,8 +8,8 @@ use serde_json::Value;
 use std::fs;
 use std::time::Instant;
 
-use crate::core::embedding::ollama_api::OllamaApiClient;
 use crate::ingest::chunking_utils::chunk_entity_fields;
+use crate::core::embedding::ollama_api::OllamaApiClient;
 
 /// Configuration for chunked ingestion processing
 #[derive(Debug, Clone)]
@@ -172,25 +172,18 @@ pub struct CharacterChunk {
 ///
 /// # Returns
 /// Returns a `ChunkedIngestResult` with processing statistics and status.
-pub async fn process_file(
-    file_path: &str,
-    config: &ChunkedIngestConfig,
-) -> Result<ChunkedIngestResult> {
+pub async fn process_file(file_path: &str, config: &ChunkedIngestConfig) -> Result<ChunkedIngestResult> {
     let start_time = Instant::now();
-
+    
     // Initialize Ollama client
     let client = OllamaApiClient::new(&config.api_endpoint);
 
     // Check API status
-    client
-        .check_status()
-        .await
+    client.check_status().await
         .context("Ollama API is not responding")?;
 
     // Test API with minimal request
-    client
-        .generate_embedding("test", &config.model_name)
-        .await
+    client.generate_embedding("test", &config.model_name).await
         .context("API test failed")?;
 
     // Read and process the input file as JSONL
@@ -217,21 +210,14 @@ pub async fn process_file(
         let character = match CharacterData::from_json(&character_json) {
             Ok(c) => c,
             Err(e) => {
-                eprintln!(
-                    "❌ Line {}: Failed to parse character data: {}",
-                    line_num + 1,
-                    e
-                );
+                eprintln!("❌ Line {}: Failed to parse character data: {}", line_num + 1, e);
                 stats.failed_embeddings += 1;
                 continue;
             }
         };
 
         if character.character_name.is_empty() {
-            eprintln!(
-                "⚠️  Line {}: Skipping character with empty name.",
-                line_num + 1
-            );
+            eprintln!("⚠️  Line {}: Skipping character with empty name.", line_num + 1);
             stats.failed_embeddings += 1;
             continue;
         }
@@ -294,7 +280,7 @@ struct CharacterProcessingResult {
 /// Process a single character entry
 async fn process_character(
     character_json: &Value,
-    _character: &CharacterData,
+    character: &CharacterData,
     client: &OllamaApiClient,
     config: &ChunkedIngestConfig,
 ) -> Result<CharacterProcessingResult> {
@@ -312,18 +298,12 @@ async fn process_character(
 
     // Process each chunk
     for chunk in &chunks {
-        match client
-            .generate_embedding(&chunk.content, &config.model_name)
-            .await
-        {
+        match client.generate_embedding(&chunk.content, &config.model_name).await {
             Ok(_) => {
                 result.embeddings_generated += 1;
             }
             Err(e) => {
-                eprintln!(
-                    "❌ Failed to generate embedding for chunk '{}': {}",
-                    chunk.label, e
-                );
+                eprintln!("❌ Failed to generate embedding for chunk '{}': {}", chunk.label, e);
                 result.failed_embeddings += 1;
             }
         }
@@ -339,7 +319,7 @@ pub fn validate_character_entry(character: &Value) -> Result<(), String> {
     }
 
     let obj = character.as_object().unwrap();
-
+    
     if !obj.contains_key("character_name") {
         return Err("Character entry must have 'character_name' field".to_string());
     }
@@ -396,7 +376,7 @@ mod tests {
             "character_name": "Vision",
             "description": "A test character"
         });
-
+        
         let result = validate_character_entry(&character);
         assert!(result.is_ok());
     }
@@ -406,7 +386,7 @@ mod tests {
         let character = json!({
             "description": "A test character"
         });
-
+        
         let result = validate_character_entry(&character);
         assert!(result.is_err());
         assert!(result.unwrap_err().contains("character_name"));
@@ -418,7 +398,7 @@ mod tests {
             "character_name": "",
             "description": "A test character"
         });
-
+        
         let result = validate_character_entry(&character);
         assert!(result.is_err());
         assert!(result.unwrap_err().contains("empty"));

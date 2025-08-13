@@ -2,12 +2,17 @@
 
 [![Version](https://img.shields.io/badge/version-0.0.1-blue.svg)](https://semver.org)
 
-> A context-aware, emotionally adaptive AI framework built exclusively for
-> Bryan Chasko
+> A context-aware, emotionally adaptive AI framework built exclusively for Bryan
+> Chasko
 
 ## Core Vision
 
-HeraldStack is an ambient intelligence system that integrates memory, emotion,
+| HeraldStack is an ambient intelligence system that in | Component  | Technology       |
+| ----------------------------------------------------- | ---------- | ---------------- |
+| Compute                                               | AWS Lambda |
+| Data Structure                                        | JSONL      |
+| Storage                                               | Amazon S3  | memory, emotion, |
+
 and modular execution across a trusted cohort of AI entities to restore
 momentum, anchor decisions, and evolve alongside Bryan's ongoing personal and
 professional journey.
@@ -16,9 +21,8 @@ professional journey.
 
 ### No New Shell Scripts for Application Logic
 
-**We are have bias to write our functionality in Rust.** Do not
-create new shell scripts
-for any application functionality. Instead:
+**We are have bias to write our functionality in Rust.** Do not create new shell
+scripts for any application functionality. Instead:
 
 - **Add features to existing Rust binaries**
 - **Update documentation** (README.md, .md files)
@@ -39,16 +43,16 @@ Before manually fixing linting/formatting issues, run our automated tools:
 
 ```bash
 # Fix JSON formatting and validation issues
-./src/target/release/check_json --fix
+./target/release/check_json --fix
 
 # Fix Rust formatting, run clippy, and tests
 ./scripts/validation/check-rust.sh
 
 # Fix Markdown formatting (line length, spacing, etc.)
-./src/target/release/format_md
+./target/release/format_md
 
 # Check and optionally fix naming convention problems
-./src/target/release/validate_naming --fix --verbose
+./target/release/validate_naming --fix --verbose
 ```
 
 **See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for complete development
@@ -203,7 +207,53 @@ Archive materials when:
   - [Ollama API Limitations](docs/vector-search/ollama-embedding-limits.md) and
     workarounds
 
-## Core Capabilities
+## HARALD Model Demonstration
+
+HeraldStack includes a custom-trained Ollama model (`harald-phi4`) that has been
+fine-tuned with project-specific knowledge and Bryan's personal context. Here's
+an example interaction showing successful knowledge retrieval:
+
+### Test Ollama Custom Model Query Example
+
+```bash
+ollama run harald-phi4 "Hello HARALD, please introduce yourself briefly."
+```
+
+### Response
+
+```json
+{
+  "response": "I am HARALD—Bryan Chasko's default ambient-intelligence entity
+  within HeraldStack designed to assist with pragmatic tasks and information
+  retrieval."
+}
+```
+
+### Additional Knowledge Verification
+
+```bash
+ollama run harald-phi4 "What Marvel AIs are you aware of?"
+```
+
+The model demonstrates comprehensive knowledge of Marvel AI characters,
+referencing Vision, FRIDAY, EDITH, and other AI entities from the Marvel
+universe, showing successful integration of the training data.
+
+This demonstrates that:
+
+- ✅ **Custom model training successful** - HARALD understands its role and
+  context
+- ✅ **Project knowledge integration** - Model recalls HeraldStack-specific
+  terminology
+- ✅ **Domain expertise** - Successfully retrieves Marvel AI information from
+  training data
+- ✅ **Structured responses** - Returns JSON format suitable for programmatic
+  use
+- ✅ **Personal context awareness** - Recognizes Bryan as the primary user
+
+The model serves as the foundation for all AI interactions within the
+HeraldStack ecosystem, providing contextually-aware responses while maintaining
+the established personality framework.## Core Capabilities
 
 - Persistent awareness of Bryan's preferences, goals, and activities
 - Collaboration modes: Co-Pilot, Auto, and Recall
@@ -215,15 +265,15 @@ Archive materials when:
 
 ## Technical Stack
 
-| Component       | Technology      |
-| --------------- | --------------- |
-| Compute         | AWS Lambda      |
-| Data Structure  } JSONL           |
-| Storage         | Amazon S3       |
-| State Tracking  | Amazon DynamoDB |
-| Semantic Memory | Pinecone        |
-| Core Logic      | Rust            |
-| Deployment      | Shell Scripts   |
+| Component              | Technology      |
+| ---------------------- | --------------- |
+| Compute                | AWS Lambda      |
+| Data Structure } JSONL |
+| Storage                | Amazon S3       |
+| State Tracking         | Amazon DynamoDB |
+| Semantic Memory        | Pinecone        |
+| Core Logic             | Rust            |
+| Deployment             | Shell Scripts   |
 
 ## Build & Deploy
 
@@ -234,51 +284,50 @@ embedding utilities):
 
 ```bash
 # Build all Rust binaries
-cd src && cargo build --release --features cli
+cargo build --release --features cli
 
-# Available binaries in src/target/release/:
+# Available binaries in target/release/:
 # - check_json           (JSON formatting and validation wrapper)
-# - format_json          (JSON formatting and validation)
-# - validate_json_schema (Schema validation and generation)
-# - ingest_chunked       (Character-based data ingestion)
 # - embedding_tool       (Embedding generation and testing)
-# - text_chunker         (Text processing utilities)
+# - format_json          (JSON formatting and validation)
 # - format_md            (Markdown formatting)
-# - validate_naming      (Naming convention validation)
-# - status               (System status checking)
-# - harald_ingest        (Main ingestion tool)
+# - harald_ingest        (General semantic search ingestion and query tool)
 # - marvelai_ingest      (Marvel-specific ingestion)
+# - status               (System status checking)
+# - text_chunker         (Text processing utilities)
+# - validate_json_schema (Schema validation and generation)
+# - validate_naming      (Naming convention validation)
 ```
 
 ### Using Rust Binaries
 
-All binaries are located in `src/target/release/` and should be run from the
-project root. **Each tool includes comprehensive `--help` documentation**:
+All binaries are located in `target/release/` and should be run from the project
+root. **Each tool includes comprehensive `--help` documentation**:
 
 ```bash
 # Get detailed usage for any tool
-./src/target/release/format_json --help
-./src/target/release/validate_naming --help
-./src/target/release/text_chunker --help
+./target/release/format_json --help
+./target/release/validate_naming --help
+./target/release/text_chunker --help
 ```
 
 #### Common Usage Examples
 
 ```bash
 # Format and validate JSON files
-./src/target/release/check_json --fix
+./target/release/check_json --fix
 
 # Format Markdown files
-./src/target/release/format_md path/to/file.md
+./target/release/format_md path/to/file.md
 
 # Validate naming conventions
-./src/target/release/validate_naming --fix --verbose
+./target/release/validate_naming --fix --verbose
 
 # Check system status (Ollama services, models, etc.)
-./src/target/release/status
+./target/release/status
 
 # Process text for embedding with detailed options
-./src/target/release/text_chunker --char 250 --file input.txt --json
+./target/release/text_chunker --char 250 --file input.txt --json
 ```
 
 **Self-Documenting Design**: Instead of maintaining separate documentation, each

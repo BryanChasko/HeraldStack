@@ -96,6 +96,7 @@ struct ValidationResult {
     errors: Vec<String>,
 }
 
+#[cfg(feature = "cli")]
 fn main() -> Result<()> {
     let cli = Cli::parse();
 

@@ -8,7 +8,6 @@ use clap::{Parser, Subcommand};
 use harald::core::embedding::ollama_api::OllamaApiClient;
 use std::fs::File;
 use std::io::Write;
-use std::path::PathBuf;
 use std::time::{Duration, Instant};
 use tokio::runtime::Runtime;
 
@@ -97,6 +96,7 @@ enum Commands {
     },
 }
 
+#[cfg(feature = "cli")]
 fn main() -> Result<()> {
     let cli = Cli::parse();
     let rt = Runtime::new()?;

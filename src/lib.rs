@@ -15,9 +15,6 @@ pub mod api;
 pub mod core;
 pub mod ingest;
 pub mod utils;
-
-// Re-export key components for convenience
-// TODO: Uncomment these once the modules are migrated
 // pub use ingest::embed;
 // pub use ingest::ingest;
 // pub use ingest::query;

@@ -1,11 +1,17 @@
+#![allow(dead_code)]
+
 use anyhow::{Context, Result};
+#[cfg(feature = "cli")]
 use clap::{ArgAction, Command};
 use colored::*;
 use std::path::PathBuf;
+#[allow(unused_imports)]
 use std::process::Command as SystemCommand;
+#[allow(unused_imports)]
 use std::process::ExitStatus;
 
 /// Run a command and return its exit status
+#[allow(dead_code)]
 fn run_command(command: &str, args: &[&str]) -> Result<ExitStatus> {
     let status = SystemCommand::new(command)
         .args(args)
@@ -28,6 +34,7 @@ fn log_error(message: &str) {
     eprintln!("{} {}", "[ERROR]".red().bold(), message);
 }
 
+#[cfg(feature = "cli")]
 fn main() -> Result<()> {
     let matches = Command::new("check_json")
         .version("0.1.0")

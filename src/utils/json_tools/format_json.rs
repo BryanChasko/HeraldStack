@@ -27,6 +27,7 @@ struct Args {
     validate_only: bool,
 }
 
+#[cfg(feature = "cli")]
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 

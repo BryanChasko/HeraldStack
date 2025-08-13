@@ -1,4 +1,7 @@
+#![allow(dead_code)]
+
 use anyhow::{Context, Result};
+#[cfg(feature = "cli")]
 use clap::{Arg, ArgAction, Command};
 use colored::*;
 use std::process::Command as ProcessCommand;
@@ -120,6 +123,7 @@ fn format_markdown_files(config: &FormatterConfig) -> Result<bool> {
     Ok(success)
 }
 
+#[cfg(feature = "cli")]
 fn main() -> Result<()> {
     let matches = Command::new("format_md")
         .about("Formats Markdown files using prettier with consistent settings")

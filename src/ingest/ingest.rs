@@ -168,7 +168,7 @@ pub async fn run_with_config(config: IngestConfig) -> Result<IngestStats> {
 /// Creates an HTTP client for embedding API requests.
 fn create_http_client() -> Result<reqwest::Client> {
     reqwest::Client::builder()
-        .timeout(std::time::Duration::from_secs(30))
+        .timeout(std::time::Duration::from_secs(90)) // Increased to accommodate embedding timeouts
         .build()
         .context("Failed to create HTTP client")
 }

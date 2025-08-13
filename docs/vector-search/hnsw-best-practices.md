@@ -25,7 +25,7 @@ Small World (HNSW) indices in the HARALD project.
 - [API Reference](#api-reference)
 - [References](#references)
 
-## Quick Reference
+## Quick Referenceå
 
 | Task               | Method                    | Example                                           |
 | ------------------ | ------------------------- | ------------------------------------------------- |

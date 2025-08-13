@@ -27,7 +27,7 @@ required-features = ["cli"]
 
 [[bin]]
 name = "ingest_chunked"
-path = "ingest/chunked_ingest.rs"
+path = "bin/ingest_chunked.rs"
 required-features = ["cli"]
 
 [[bin]]
@@ -37,6 +37,12 @@ required-features = ["cli"]
 
 [[bin]]
 name = "validate_naming"
+path = "bin/validate_naming.rs"
+required-features = ["cli"]
+
+# Legacy binary - will be removed after migration
+[[bin]]
+name = "validate_naming_legacy"
 path = "utils/validation/validate_naming.rs"
 required-features = ["cli"]
 
@@ -66,7 +72,7 @@ path = "lib.rs"
 
 [[bin]]
 name = "single_character_ingest"
-path = "ingest/single_character_ingest.rs"
+path = "bin/single_character_ingest.rs"
 required-features = ["cli"]
 
 [dependencies]

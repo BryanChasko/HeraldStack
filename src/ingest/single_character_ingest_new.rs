@@ -77,7 +77,7 @@ pub fn validate_character_entry(character: &serde_json::Value) -> Result<(), Str
     }
 
     let obj = character.as_object().unwrap();
-
+    
     if !obj.contains_key("character_name") {
         return Err("Character entry must have 'character_name' field".to_string());
     }
@@ -113,7 +113,7 @@ mod tests {
             "character_name": "Vision",
             "description": "A test character"
         });
-
+        
         let result = validate_character_entry(&character);
         assert!(result.is_ok());
     }
@@ -123,7 +123,7 @@ mod tests {
         let character = json!({
             "description": "A test character"
         });
-
+        
         let result = validate_character_entry(&character);
         assert!(result.is_err());
         assert!(result.unwrap_err().contains("character_name"));
@@ -135,7 +135,7 @@ mod tests {
             "character_name": "",
             "description": "A test character"
         });
-
+        
         let result = validate_character_entry(&character);
         assert!(result.is_err());
         assert!(result.unwrap_err().contains("empty"));
@@ -144,7 +144,7 @@ mod tests {
     #[test]
     fn test_validate_character_entry_invalid_structure() {
         let character = json!("not an object");
-
+        
         let result = validate_character_entry(&character);
         assert!(result.is_err());
         assert!(result.unwrap_err().contains("JSON object"));
@@ -157,12 +157,9 @@ mod tests {
         });
         let output_dir = PathBuf::from("/tmp");
         let config = SingleCharacterConfig::default();
-
+        
         let result = process_character(&character, &output_dir, &config);
         assert!(result.is_err());
-        assert!(result
-            .unwrap_err()
-            .to_string()
-            .contains("not yet implemented"));
+        assert!(result.unwrap_err().to_string().contains("not yet implemented"));
     }
 }

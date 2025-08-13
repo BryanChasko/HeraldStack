@@ -27,6 +27,7 @@ struct Args {
     output: Option<PathBuf>,
 }
 
+#[cfg(feature = "cli")]
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 

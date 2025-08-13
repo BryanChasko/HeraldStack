@@ -538,6 +538,7 @@ fn process_store_files(
 }
 
 /// Main entry point for the JSON formatting tool
+#[cfg(feature = "cli")]
 fn main() -> Result<()> {
     let matches = Command::new("format_json")
         .about("JSON formatting utility for vector data files")

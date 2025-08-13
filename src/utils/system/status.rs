@@ -1,7 +1,12 @@
+#![allow(dead_code)]
+
 use anyhow::{Context, Result};
+#[cfg(feature = "cli")]
 use clap::{Arg, ArgAction, Command};
-use colored::*;
+use colored::Colorize;
+#[allow(unused_imports)]
 use std::process::{Command as ProcessCommand, Output};
+#[allow(unused_imports)]
 use std::time::{Duration, Instant};
 
 /// Configuration for status check
@@ -167,7 +172,8 @@ fn check_models(config: &StatusConfig) -> Result<()> {
 }
 
 /// Check file system status
-fn check_filesystem(config: &StatusConfig) -> Result<()> {
+#[allow(dead_code)]
+fn check_filesystem(_config: &StatusConfig) -> Result<()> {
     log_info("Checking filesystem...");
 
     // Check disk space
@@ -254,6 +260,7 @@ fn run_status_check(config: &StatusConfig) -> Result<bool> {
     Ok(ollama_running)
 }
 
+#[cfg(feature = "cli")]
 fn main() -> Result<()> {
     let matches = Command::new("status")
         .about("Checks the status of HARALD system components")

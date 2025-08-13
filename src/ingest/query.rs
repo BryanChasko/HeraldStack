@@ -29,7 +29,10 @@ use crate::ingest::embed;
 /// - Prevents token limit overflow in LLM requests
 /// - Ensures reasonable response times
 /// - Maintains focus on most relevant content
-const MAX_CONTEXT_CHARS: usize = 800;
+///
+/// Based on Ollama API testing documented in ollama-embedding-limits.md,
+/// the practical limit is 250 characters for reliable processing.
+const MAX_CONTEXT_CHARS: usize = 200;
 
 /// Number of similar documents to retrieve for context.
 ///
@@ -160,8 +163,8 @@ fn load_index_and_metadata(
     let data_dir = config.root_dir.join("data");
 
     // Load the HNSW index using HnswIo loader
-    let index_path = data_dir.join("index");
-    let mut hnsw_loader = HnswIo::new(&index_path, "");
+    // The ingest module saves files as "index.hnsw.*" directly in data_dir
+    let mut hnsw_loader = HnswIo::new(&data_dir, "index");
     let loaded_index: Hnsw<'_, f32, DistCosine> = hnsw_loader
         .load_hnsw()
         .context("Failed to load HNSW index - ensure ingestion has been run")?;

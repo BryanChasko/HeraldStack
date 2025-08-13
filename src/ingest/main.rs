@@ -10,12 +10,8 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 
-// TODO: Update these imports once modules are fully migrated
-// For now, we'll use the local module paths directly
-mod embed;
-mod ingest;
-mod query;
-use query::QueryConfig;
+// Use the proper module structure from lib.rs
+use harald::ingest::{ingest, query, QueryConfig};
 
 /// Command-line interface for HARALD semantic search system.
 ///
@@ -68,6 +64,10 @@ enum Commands {
         /// The question or search query
         #[arg(required = true)]
         prompt: Vec<String>,
+
+        /// Root directory containing the data folder with index files (defaults to current directory)
+        #[arg(short, long)]
+        root: Option<std::path::PathBuf>,
 
         /// Number of similar documents to retrieve for context
         #[arg(short, long, default_value = "3")]
@@ -127,6 +127,7 @@ async fn main() -> Result<()> {
 
         Commands::Query {
             prompt,
+            root,
             num_results,
             max_context_chars,
             llm_endpoint,
@@ -136,13 +137,18 @@ async fn main() -> Result<()> {
             let query_text = prompt.join(" ");
 
             // Create query configuration with all options set at initialization
-            let config = QueryConfig {
+            let mut config = QueryConfig {
                 num_results,
                 max_context_chars,
                 llm_endpoint,
                 model_name,
                 ..Default::default()
             };
+
+            // Set root directory if provided
+            if let Some(root_dir) = root {
+                config.root_dir = root_dir;
+            }
 
             // Execute query
             let result = query::run_with_config(&query_text, config).await?;

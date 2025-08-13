@@ -5,6 +5,7 @@
 
 use harald::utils::chunking;
 
+#[cfg(feature = "cli")]
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     chunking::run_cli()
 }

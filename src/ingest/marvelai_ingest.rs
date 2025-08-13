@@ -109,11 +109,14 @@ async fn test_embedding_api(client: &Client, max_tokens: usize) -> Result<()> {
     let test_config = embed::EmbedConfig {
         model: "harald-phi4".to_string(),
         endpoint: "http://localhost:11434/api/embeddings".to_string(),
-        timeout_secs: 15, // Longer timeout to account for model loading
-        max_retries: 2,   // Allow 2 attempts for initial API warmup
+        timeout_secs: 60, // Longer timeout to account for model loading and larger content
+        max_retries: 3,   // Allow 3 attempts for better reliability
     };
 
-    println!("  Testing: embedding '{}' (using {})", test_text, test_config.endpoint);
+    println!(
+        "  Testing: embedding '{}' (using {})",
+        test_text, test_config.endpoint
+    );
     println!("  Model warmup may take a moment on first request...");
 
     match embed::embed_with_config(test_text, max_tokens, client, test_config).await {
@@ -121,18 +124,21 @@ async fn test_embedding_api(client: &Client, max_tokens: usize) -> Result<()> {
             if embedding.is_empty() {
                 return Err(anyhow::anyhow!("Received empty embedding vector"));
             }
-            println!("  ✅ Embedding vectors received successfully ({} dimensions)", embedding.len());
+            println!(
+                "  ✅ Embedding vectors received successfully ({} dimensions)",
+                embedding.len()
+            );
             Ok(())
         }
         Err(e) => {
             println!("  ❌ Request failed: {}", e);
-            
+
             // Provide helpful debugging information
             eprintln!("  💡 Troubleshooting tips:");
             eprintln!("     • Ensure 'ollama serve' is running in a terminal");
             eprintln!("     • Verify harald-phi4 model is available: ollama list");
             eprintln!("     • Check API endpoint: curl http://localhost:11434/api/version");
-            
+
             Err(anyhow::anyhow!(
                 "Failed to generate embeddings with harald-phi4 model (fast test failed)"
             ))

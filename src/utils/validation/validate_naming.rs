@@ -1,12 +1,21 @@
+#![allow(dead_code)]
+
+#[allow(unused_imports)]
 use anyhow::{Context, Result};
+#[cfg(feature = "cli")]
 use clap::{Arg, ArgAction, Command};
 use colored::*;
 use std::fs;
+#[allow(unused_imports)]
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
+// Allow dead code for utility functions that are only used in CLI mode
+#[allow(dead_code)]
+
 /// Configuration for validation
 #[derive(Debug)]
+#[allow(dead_code)]
 struct ValidatorConfig {
     fix_mode: bool,
     verbose: bool,
@@ -15,6 +24,7 @@ struct ValidatorConfig {
 
 /// Validation issue type
 #[derive(Debug)]
+#[allow(dead_code)]
 struct NamingIssue {
     path: PathBuf,
     issue_type: String,
@@ -22,6 +32,7 @@ struct NamingIssue {
 }
 
 /// Log utilities with colored output
+#[allow(dead_code)]
 fn log_info(message: &str) {
     println!("{} {}", "[INFO]".blue().bold(), message);
 }
@@ -412,6 +423,7 @@ fn run_validations(config: &ValidatorConfig) -> Result<bool> {
     Ok(success)
 }
 
+#[cfg(feature = "cli")]
 fn main() -> Result<()> {
     let matches = Command::new("validate_naming")
         .about("Validates file and directory naming against project conventions")
