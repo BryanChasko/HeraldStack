@@ -61,7 +61,7 @@ def check_rate_limit():
 
 
 def http_request(url, headers, body=None, method="POST", timeout=120):
-    """Direct http.client request — no redirect auth stripping."""
+    """Direct http.client request - no redirect auth stripping."""
     parsed = urlparse(url)
     use_ssl = parsed.scheme == "https"
     host = parsed.hostname
@@ -137,7 +137,7 @@ class ProxyHandler(BaseHTTPRequestHandler):
             return
 
         data["model"] = mapped_model
-        # Strip streaming — proxy buffers full response for simplicity
+        # Strip streaming - proxy buffers full response for simplicity
         data.pop("stream", None)
         data.pop("stream_options", None)
 
@@ -175,7 +175,6 @@ class ProxyHandler(BaseHTTPRequestHandler):
         data.pop("stream", None)
         data.pop("stream_options", None)
         payload = json.dumps(data).encode()
-        parsed = urlparse(f"{OLLAMA_HOST}/v1/chat/completions")
 
         headers = {"Content-Type": "application/json"}
         t0 = time.time()
