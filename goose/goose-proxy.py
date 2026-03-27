@@ -3,6 +3,7 @@ import json
 import time
 import ssl
 import http.client
+import urllib.request
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse
 
@@ -60,26 +61,11 @@ def check_rate_limit():
     return True
 
 
-def http_request(url, headers, body=None, method="POST", timeout=120):
-    """Direct http.client request - no redirect auth stripping."""
-    parsed = urlparse(url)
-    use_ssl = parsed.scheme == "https"
-    host = parsed.hostname
-    port = parsed.port or (443 if use_ssl else 80)
-    path = parsed.path or "/"
-
-    if use_ssl:
-        ctx = ssl.create_default_context()
-        conn = http.client.HTTPSConnection(host, port, timeout=timeout, context=ctx)
-    else:
-        conn = http.client.HTTPConnection(host, port, timeout=timeout)
-
-    try:
-        conn.request(method, path, body=body, headers=headers)
-        return conn.getresponse()
-    except Exception:
-        conn.close()
-        raise
+def strip_streaming(data):
+    """Goose sends stream:true but this proxy buffers full responses.
+    Must strip for both providers or resp.read() hangs on chunked SSE."""
+    data.pop("stream", None)
+    data.pop("stream_options", None)
 
 
 MODELS_RESPONSE = json.dumps({
@@ -93,7 +79,7 @@ MODELS_RESPONSE = json.dumps({
 
 class ProxyHandler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
-        pass  # suppress default access log; we log our own
+        pass
 
     def do_GET(self):
         if self.path == "/health":
@@ -132,32 +118,30 @@ class ProxyHandler(BaseHTTPRequestHandler):
         return self.handle_openrouter(openrouter_model, data)
 
     def handle_openrouter(self, mapped_model, data):
+        """Uses http.client instead of urllib — urllib strips Authorization
+        headers on redirects, which breaks auth behind Cloudflare."""
         if not OPENROUTER_API_KEY:
             self._error(500, "OPENROUTER_API_KEY not set")
             return
 
         data["model"] = mapped_model
-        # Strip streaming - proxy buffers full response for simplicity
-        data.pop("stream", None)
-        data.pop("stream_options", None)
-
+        strip_streaming(data)
         payload = json.dumps(data).encode()
-        key_prefix = OPENROUTER_API_KEY[:8] if OPENROUTER_API_KEY else "NONE"
+
+        key_prefix = OPENROUTER_API_KEY[:8]
         log(f"openrouter key={key_prefix}... model={mapped_model} bytes={len(payload)}")
 
-        headers = {
-            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-            "Content-Type": "application/json",
-            "HTTP-Referer": "https://github.com/bryanchasko/heraldstack",
-            "X-Title": "HeraldStack Goose Proxy",
-        }
-
+        ctx = ssl.create_default_context()
+        conn = http.client.HTTPSConnection("openrouter.ai", 443, timeout=120, context=ctx)
         t0 = time.time()
         try:
-            resp = http_request(
-                "https://openrouter.ai/api/v1/chat/completions",
-                headers, payload, timeout=120,
-            )
+            conn.request("POST", "/api/v1/chat/completions", body=payload, headers={
+                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                "Content-Type": "application/json",
+                "HTTP-Referer": "https://github.com/bryanchasko/heraldstack",
+                "X-Title": "HeraldStack Goose Proxy",
+            })
+            resp = conn.getresponse()
             body = resp.read()
             elapsed = time.time() - t0
             log(f"openrouter status={resp.status} elapsed={elapsed:.1f}s bytes={len(body)}")
@@ -170,31 +154,38 @@ class ProxyHandler(BaseHTTPRequestHandler):
             elapsed = time.time() - t0
             log(f"openrouter FAIL elapsed={elapsed:.1f}s error={e}")
             self._error(502, str(e), "openrouter")
+        finally:
+            conn.close()
 
     def handle_ollama(self, data):
-        data.pop("stream", None)
-        data.pop("stream_options", None)
-        payload = json.dumps(data).encode()
-
-        headers = {"Content-Type": "application/json"}
+        """Ollama: no auth, no Cloudflare — urllib is fine here.
+        Only change from original: strip streaming (same buffering issue)."""
+        strip_streaming(data)
+        post_data = json.dumps(data).encode()
+        req = urllib.request.Request(
+            f"{OLLAMA_HOST}/v1/chat/completions",
+            data=post_data,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
         t0 = time.time()
         try:
-            resp = http_request(
-                f"{OLLAMA_HOST}/v1/chat/completions",
-                headers, payload, timeout=120,
-            )
-            body = resp.read()
-            elapsed = time.time() - t0
-            log(f"ollama status={resp.status} elapsed={elapsed:.1f}s")
-
-            self.send_response(resp.status)
-            self.send_header("Content-Type", "application/json")
-            self.end_headers()
-            self.wfile.write(body)
+            with urllib.request.urlopen(req, timeout=120) as resp:
+                body = resp.read()
+                elapsed = time.time() - t0
+                log(f"ollama status={resp.getcode()} elapsed={elapsed:.1f}s")
+                self.send_response(resp.getcode())
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(body)
         except Exception as e:
+            err = str(e)
+            if hasattr(e, "read"):
+                try: err = e.read().decode()
+                except: pass
             elapsed = time.time() - t0
-            log(f"ollama FAIL elapsed={elapsed:.1f}s error={e}")
-            self._error(502, str(e), "ollama")
+            log(f"ollama FAIL elapsed={elapsed:.1f}s error={err}")
+            self._error(502, err, "ollama")
 
     def _error(self, code, msg, provider="proxy"):
         self.send_response(code)
